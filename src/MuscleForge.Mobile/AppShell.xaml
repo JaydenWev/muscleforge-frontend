@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       x:Class="MuscleForge.Mobile.AppShell"
+       Title="MuscleForge"
+       FlyoutBehavior="Disabled">
+  <TabBar>
+    <ShellContent x:Name="WorkoutContent" Title="Workout" Route="workout" />
+    <ShellContent x:Name="TemplatesContent" Title="Templates" Route="templates" />
+    <ShellContent x:Name="HistoryContent" Title="History" Route="history" />
+    <ShellContent x:Name="SettingsContent" Title="Settings" Route="settings" />
+  </TabBar>
+</Shell>

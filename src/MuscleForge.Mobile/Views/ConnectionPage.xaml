@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:MuscleForge.Mobile.Core.ViewModels;assembly=MuscleForge.Mobile.Core"
+             x:Class="MuscleForge.Mobile.Views.ConnectionPage"
+             x:DataType="vm:ConnectionViewModel"
+             Title="Settings">
+  <ScrollView>
+    <VerticalStackLayout Padding="24,32" Spacing="20">
+      <Label Text="Connect your API" FontSize="28" FontAttributes="Bold"
+             SemanticProperties.HeadingLevel="Level1" />
+      <Label Text="Enter the HTTPS address of your MuscleForge server." />
+      <Label Text="API address" FontAttributes="Bold" />
+      <Entry Text="{Binding ApiBaseUrl}" Placeholder="https://your-server/" Keyboard="Url"
+             ReturnType="Go" ReturnCommand="{Binding CheckConnectionCommand}"
+             IsSpellCheckEnabled="False" IsTextPredictionEnabled="False"
+             AutomationId="ApiBaseUrlEntry" SemanticProperties.Description="MuscleForge API address" />
+      <Button Text="Save and check connection" Command="{Binding CheckConnectionCommand}"
+              AutomationId="CheckApiConnectionButton" />
+      <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+      <Label Text="{Binding Status}" AutomationId="ApiConnectionStatus" />
+    </VerticalStackLayout>
+  </ScrollView>
+</ContentPage>

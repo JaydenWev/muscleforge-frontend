@@ -1,0 +1,10 @@
+{
+  "solution": {
+    "path": "MuscleForge.Frontend.sln",
+    "projects": [
+      "src\\MuscleForge.Mobile.Core\\MuscleForge.Mobile.Core.csproj",
+      "src\\MuscleForge.Client\\MuscleForge.Client.csproj",
+      "tests\\MuscleForge.Mobile.UnitTests\\MuscleForge.Mobile.UnitTests.csproj"
+    ]
+  }
+}

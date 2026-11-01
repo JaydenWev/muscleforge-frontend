@@ -1,0 +1,36 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MuscleForge.Mobile", "src\MuscleForge.Mobile\MuscleForge.Mobile.csproj", "{53B525B7-16A6-53C5-8965-869DA56D2975}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MuscleForge.Mobile.Core", "src\MuscleForge.Mobile.Core\MuscleForge.Mobile.Core.csproj", "{65FE2F19-2CB3-5B3A-90E7-363DC3BB3361}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MuscleForge.Client", "src\MuscleForge.Client\MuscleForge.Client.csproj", "{173F6DCF-0391-586F-8791-35079D8A23CD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MuscleForge.Mobile.UnitTests", "tests\MuscleForge.Mobile.UnitTests\MuscleForge.Mobile.UnitTests.csproj", "{4BF8CEFE-187A-57E8-81C4-1DD7313AEA5F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{53B525B7-16A6-53C5-8965-869DA56D2975}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53B525B7-16A6-53C5-8965-869DA56D2975}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53B525B7-16A6-53C5-8965-869DA56D2975}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53B525B7-16A6-53C5-8965-869DA56D2975}.Release|Any CPU.Build.0 = Release|Any CPU
+		{65FE2F19-2CB3-5B3A-90E7-363DC3BB3361}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65FE2F19-2CB3-5B3A-90E7-363DC3BB3361}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65FE2F19-2CB3-5B3A-90E7-363DC3BB3361}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65FE2F19-2CB3-5B3A-90E7-363DC3BB3361}.Release|Any CPU.Build.0 = Release|Any CPU
+		{173F6DCF-0391-586F-8791-35079D8A23CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{173F6DCF-0391-586F-8791-35079D8A23CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{173F6DCF-0391-586F-8791-35079D8A23CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{173F6DCF-0391-586F-8791-35079D8A23CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BF8CEFE-187A-57E8-81C4-1DD7313AEA5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BF8CEFE-187A-57E8-81C4-1DD7313AEA5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BF8CEFE-187A-57E8-81C4-1DD7313AEA5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BF8CEFE-187A-57E8-81C4-1DD7313AEA5F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
