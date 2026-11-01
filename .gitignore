@@ -1,0 +1,28 @@
+# .NET build output and Android packages
+**/[Bb]in/
+**/[Oo]bj/
+artifacts/
+TestResults/
+*.apk
+*.aab
+
+# Local IDE settings
+.vs/
+.idea/
+*.user
+*.suo
+
+# Local credentials, configuration, and signing keys
+.env
+.env.*
+!.env.example
+*.keystore
+*.jks
+*.pfx
+*.p12
+*.pem
+*.key
+
+# Operating system files
+.DS_Store
+Thumbs.db
