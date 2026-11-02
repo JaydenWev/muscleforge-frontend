@@ -24,7 +24,8 @@ public sealed class ConnectionTests
         using var handler = new StatusHandler();
         using var http = new HttpClient(handler);
         var client = new MuscleForgeApiClient(http);
-        var response = await client.GetApiStatusAsync(new Uri("https://example.test/muscleforge/"));
+        var response = await client.GetApiStatusAsync(new Uri("https://example.test/muscleforge/"),
+            TestContext.Current.CancellationToken);
         Assert.Equal("https://example.test/muscleforge/api/v1/status", handler.RequestUri!.AbsoluteUri);
         Assert.Equal("MuscleForge", response.Service);
     }

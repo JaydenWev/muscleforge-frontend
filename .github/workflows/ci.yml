@@ -39,6 +39,9 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -49,10 +52,12 @@ jobs:
       - run: dotnet restore src/MuscleForge.Mobile/MuscleForge.Mobile.csproj
       - name: Build Android debug APK
         run: dotnet build src/MuscleForge.Mobile/MuscleForge.Mobile.csproj -c Debug --no-restore
+      - name: Verify standalone APK payload
+        run: python3 scripts/check-apk-payload.py src/MuscleForge.Mobile/bin/Debug/net10.0-android36.0/local.muscleforge.app-Signed.apk
       - uses: actions/upload-artifact@v4
         with:
           name: muscleforge-android-debug
-          path: src/MuscleForge.Mobile/bin/Debug/**/*.apk
+          path: src/MuscleForge.Mobile/bin/Debug/**/*-Signed.apk
           if-no-files-found: error
       - uses: actions/upload-artifact@v4
         if: always()

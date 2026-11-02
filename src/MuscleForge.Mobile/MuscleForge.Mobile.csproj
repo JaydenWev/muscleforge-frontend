@@ -11,6 +11,8 @@
     <ApplicationVersion>1</ApplicationVersion>
     <SupportedOSPlatformVersion>24.0</SupportedOSPlatformVersion>
     <AndroidPackageFormats>apk</AndroidPackageFormats>
+    <!-- CI APKs must work with adb install without a fast-deployment session. -->
+    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../MuscleForge.Mobile.Core/MuscleForge.Mobile.Core.csproj" />

@@ -44,9 +44,12 @@ sdkmanager 'platforms;android-36' 'build-tools;36.0.0' 'platform-tools'
 dotnet workload install maui-android
 dotnet restore src/MuscleForge.Mobile/MuscleForge.Mobile.csproj
 dotnet build src/MuscleForge.Mobile/MuscleForge.Mobile.csproj -c Debug
+python3 scripts/check-apk-payload.py src/MuscleForge.Mobile/bin/Debug/net10.0-android36.0/local.muscleforge.app-Signed.apk
 ```
 
-The SDK/workload set are pinned by `global.json`. Build output is under `src/MuscleForge.Mobile/bin/Debug/`. Install a debug `*-Signed.apk` using `adb install -r /path/to/your-Signed.apk`. CI publishes `muscleforge-android-debug` APK artifacts.
+The SDK/workload set are pinned by `global.json`. Build output is under `src/MuscleForge.Mobile/bin/Debug/`. Debug APKs embed their managed assemblies, so install a `*-Signed.apk` directly using `adb install -r /path/to/your-Signed.apk`. CI publishes `muscleforge-android-debug` APK artifacts.
+
+Linux ARM64 hosts also need native replacements for the workload's x64 build tools. See the [ARM64 development toolchain](docs/android-arm64.md) for the configured environment and tool versions.
 
 Debug builds use a development signing identity. Release signing, key backups, upgrade compatibility, and the signed personal APK will accompany the first usable release. No AAB or store account is required now.
 
@@ -75,6 +78,8 @@ Update the snapshot deliberately from a specific backend commit, update its prov
 
 ## Checks and remaining setup
 
-CI checks client drift, runs portable tests, builds Android separately, and publishes debug APKs and resolved lockfiles. Tests cover HTTPS validation, path prefixes, invalid input, unavailable servers/retry, and incompatible API versions. [Device smoke checks](tests/MuscleForge.Mobile.UiTests/README.md) are manual until Appium coverage is added with the first authenticated flow.
+CI checks client drift, runs portable tests, builds Android separately, verifies that managed code is packaged for every APK ABI, and publishes signed debug APKs and resolved lockfiles. Tests cover HTTPS validation, path prefixes, invalid input, unavailable servers/retry, and incompatible API versions. [Device smoke checks](tests/MuscleForge.Mobile.UiTests/README.md) are manual until Appium coverage is added with the first authenticated flow.
 
-The first restore generates `packages.lock.json` files; commit them from your restore or CI artifacts. Existing lockfiles are enforced during CI restore. The authoring workspace lacks .NET/Android tools, NuGet access, and Docker daemon access. Builds, .NET tests, lockfile resolution, and device behavior have not been verified there.
+The first restore generates `packages.lock.json` files; commit them from your restore or CI artifacts. Existing lockfiles are enforced during CI restore.
+
+The configured Linux ARM64 development workspace has verified generated-client consistency, all portable tests, Debug and Release Android builds, and APK signatures. Standalone APK startup and the Settings screen have also been verified on a OnePlus 13 running Android 16. Run the remaining manual device smoke checks to verify other device behavior.
