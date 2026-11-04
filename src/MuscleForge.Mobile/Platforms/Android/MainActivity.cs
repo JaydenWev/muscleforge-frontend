@@ -1,9 +1,24 @@
 using Android.App;
 using Android.Content.PM;
+using Android.OS;
+using MuscleForge.Mobile.Services;
 
 namespace MuscleForge.Mobile;
 
-[Activity(Theme = "@style/Maui.SplashTheme", MainLauncher = true,
+[Activity(Theme = "@style/Maui.SplashTheme", MainLauncher = true, LaunchMode = LaunchMode.SingleTop,
     ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode
         | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize | ConfigChanges.Density)]
-public class MainActivity : MauiAppCompatActivity { }
+public class MainActivity : MauiAppCompatActivity
+{
+    protected override void OnCreate(Bundle? savedInstanceState)
+    {
+        base.OnCreate(savedInstanceState);
+        AppAppearance.UpdateSystemBars();
+    }
+
+    protected override void OnResume()
+    {
+        base.OnResume();
+        AppAppearance.UpdateSystemBars();
+    }
+}

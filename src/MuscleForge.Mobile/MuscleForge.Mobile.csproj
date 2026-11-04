@@ -7,8 +7,8 @@
     <SingleProject>true</SingleProject>
     <ApplicationTitle>MuscleForge</ApplicationTitle>
     <ApplicationId>local.muscleforge.app</ApplicationId>
-    <ApplicationDisplayVersion>0.1.0</ApplicationDisplayVersion>
-    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationDisplayVersion>0.2.0</ApplicationDisplayVersion>
+    <ApplicationVersion>2</ApplicationVersion>
     <SupportedOSPlatformVersion>24.0</SupportedOSPlatformVersion>
     <AndroidPackageFormats>apk</AndroidPackageFormats>
     <!-- CI APKs must work with adb install without a fast-deployment session. -->
@@ -22,7 +22,10 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
   </ItemGroup>
   <ItemGroup>
-    <MauiIcon Include="Resources/AppIcon/appicon.svg" Color="#111827" />
-    <MauiSplashScreen Include="Resources/Splash/splash.svg" Color="#111827" BaseSize="128,128" />
+    <MauiIcon Include="Resources/AppIcon/appicon.svg" Color="#0F1512" />
+    <MauiSplashScreen Include="Resources/Splash/splash.svg" Color="#0F1512" BaseSize="128,128" />
+    <MauiImage Include="Resources/Images/*.svg" />
+    <MauiFont Include="Resources/Fonts/*.ttf" />
+    <MauiAsset Include="Resources/Fonts/Manrope-OFL.txt" LogicalName="Manrope-OFL.txt" />
   </ItemGroup>
 </Project>

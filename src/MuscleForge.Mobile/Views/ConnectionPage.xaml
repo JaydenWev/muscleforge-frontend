@@ -2,23 +2,80 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:MuscleForge.Mobile.Core.ViewModels;assembly=MuscleForge.Mobile.Core"
+             xmlns:ui="clr-namespace:MuscleForge.Mobile.Controls"
              x:Class="MuscleForge.Mobile.Views.ConnectionPage"
              x:DataType="vm:ConnectionViewModel"
              Title="Settings">
   <ScrollView>
-    <VerticalStackLayout Padding="24,32" Spacing="20">
-      <Label Text="Connect your API" FontSize="28" FontAttributes="Bold"
-             SemanticProperties.HeadingLevel="Level1" />
-      <Label Text="Enter the HTTPS address of your MuscleForge server." />
-      <Label Text="API address" FontAttributes="Bold" />
-      <Entry Text="{Binding ApiBaseUrl}" Placeholder="https://your-server/" Keyboard="Url"
-             ReturnType="Go" ReturnCommand="{Binding CheckConnectionCommand}"
-             IsSpellCheckEnabled="False" IsTextPredictionEnabled="False"
-             AutomationId="ApiBaseUrlEntry" SemanticProperties.Description="MuscleForge API address" />
-      <Button Text="Save and check connection" Command="{Binding CheckConnectionCommand}"
-              AutomationId="CheckApiConnectionButton" />
-      <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
-      <Label Text="{Binding Status}" AutomationId="ApiConnectionStatus" />
+    <VerticalStackLayout Padding="24,20,24,32" Spacing="26">
+      <VerticalStackLayout Spacing="10">
+        <Label Text="MAKE YOURSELF AT HOME" Style="{StaticResource Eyebrow}" />
+        <Label Text="Your space,&#10;your way." Style="{StaticResource DisplayTitle}"
+               SemanticProperties.HeadingLevel="Level1" />
+        <Label Text="A few details. A better place to train." Style="{StaticResource BodyText}" />
+      </VerticalStackLayout>
+
+      <Border Style="{StaticResource Card}">
+        <VerticalStackLayout Spacing="20">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
+              <ui:IconView Kind="Server" Tint="{DynamicResource Accent}" WidthRequest="22" HeightRequest="22" />
+              <Label Text="Your server" Style="{StaticResource SectionTitle}" FontSize="18" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+            <ui:ConnectionBadge Grid.Column="1" State="{Binding State}" VerticalOptions="Center" />
+          </Grid>
+
+          <VerticalStackLayout Spacing="10">
+            <Label Text="SERVER ADDRESS" Style="{StaticResource Eyebrow}" />
+            <Border BackgroundColor="{DynamicResource SurfaceRaised}" Stroke="{DynamicResource Outline}"
+                    StrokeThickness="1" Padding="12,4" StrokeShape="RoundRectangle 16">
+              <Entry Text="{Binding ApiBaseUrl}" Placeholder="https://your-server/" Keyboard="Url"
+                     ReturnType="Go" ReturnCommand="{Binding CheckConnectionCommand}"
+                     ClearButtonVisibility="WhileEditing"
+                     IsSpellCheckEnabled="False" IsTextPredictionEnabled="False"
+                     AutomationId="ApiBaseUrlEntry" SemanticProperties.Description="MuscleForge API address">
+                <Entry.Triggers>
+                  <DataTrigger TargetType="Entry" Binding="{Binding IsBusy}" Value="True">
+                    <Setter Property="IsEnabled" Value="False" />
+                  </DataTrigger>
+                </Entry.Triggers>
+              </Entry>
+            </Border>
+            <Label Text="Use your server’s HTTPS base address. If you use Tailscale, keep it connected on your phone."
+                   Style="{StaticResource SmallText}" />
+          </VerticalStackLayout>
+
+          <Button Text="{Binding ActionText}" Command="{Binding CheckConnectionCommand}"
+                  AutomationId="CheckApiConnectionButton" />
+
+          <Border BackgroundColor="{DynamicResource SurfaceRaised}" StrokeThickness="0"
+                  Padding="16" StrokeShape="RoundRectangle 16">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+              <VerticalStackLayout Spacing="6">
+                <Label Text="{Binding ConnectionTitle}" FontFamily="ManropeSemiBold" FontSize="13" />
+                <Label Text="{Binding Status}" Style="{StaticResource SmallText}" AutomationId="ApiConnectionStatus" />
+              </VerticalStackLayout>
+              <ActivityIndicator Grid.Column="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
+                                 Color="{DynamicResource Accent}" WidthRequest="22" HeightRequest="22" />
+            </Grid>
+          </Border>
+        </VerticalStackLayout>
+      </Border>
+
+      <Border Style="{StaticResource Card}">
+        <VerticalStackLayout Spacing="18">
+          <VerticalStackLayout Spacing="6">
+            <Label Text="Set the mood" Style="{StaticResource SectionTitle}" FontSize="18" />
+            <Label Text="Choose the look that feels like you." Style="{StaticResource SmallText}" />
+          </VerticalStackLayout>
+          <ui:AppearancePicker x:Name="AppearanceOptions" />
+        </VerticalStackLayout>
+      </Border>
+
+      <VerticalStackLayout Spacing="5" Margin="0,0,0,4">
+        <Label Text="MUSCLEFORGE" Style="{StaticResource Eyebrow}" HorizontalTextAlignment="Center" />
+        <Label x:Name="VersionLabel" Style="{StaticResource SmallText}" HorizontalTextAlignment="Center" />
+      </VerticalStackLayout>
     </VerticalStackLayout>
   </ScrollView>
 </ContentPage>

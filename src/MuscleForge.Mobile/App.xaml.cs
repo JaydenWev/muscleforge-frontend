@@ -1,14 +1,18 @@
+using MuscleForge.Mobile.Services;
+
 namespace MuscleForge.Mobile;
 
 public partial class App : Application
 {
-    private readonly AppShell shell;
+    private readonly IServiceProvider services;
 
-    public App(AppShell shell)
+    public App(IServiceProvider services)
     {
         InitializeComponent();
-        this.shell = shell;
+        this.services = services;
+        services.GetRequiredService<AppAppearance>().Initialize(this);
     }
 
-    protected override Window CreateWindow(IActivationState? activationState) => new(shell);
+    protected override Window CreateWindow(IActivationState? activationState) =>
+        new(services.GetRequiredService<AppShell>());
 }

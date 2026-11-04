@@ -3,11 +3,17 @@
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
        x:Class="MuscleForge.Mobile.AppShell"
        Title="MuscleForge"
+       Shell.NavBarIsVisible="False"
+       Shell.BackgroundColor="{DynamicResource PageBackground}"
+       Shell.TabBarBackgroundColor="{DynamicResource TabBackground}"
+       Shell.TabBarForegroundColor="{DynamicResource Accent}"
+       Shell.TabBarTitleColor="{DynamicResource Accent}"
+       Shell.TabBarUnselectedColor="{DynamicResource TextMuted}"
        FlyoutBehavior="Disabled">
   <TabBar>
-    <ShellContent x:Name="WorkoutContent" Title="Workout" Route="workout" />
-    <ShellContent x:Name="TemplatesContent" Title="Templates" Route="templates" />
-    <ShellContent x:Name="HistoryContent" Title="History" Route="history" />
-    <ShellContent x:Name="SettingsContent" Title="Settings" Route="settings" />
+    <ShellContent x:Name="WorkoutContent" Title="Workout" Icon="tab_workout.png" Route="workout" />
+    <ShellContent x:Name="TemplatesContent" Title="Templates" Icon="tab_templates.png" Route="templates" />
+    <ShellContent x:Name="HistoryContent" Title="History" Icon="tab_history.png" Route="history" />
+    <ShellContent x:Name="SettingsContent" Title="Settings" Icon="tab_settings.png" Route="settings" />
   </TabBar>
 </Shell>
