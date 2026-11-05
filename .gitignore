@@ -30,3 +30,6 @@ Thumbs.db
 # Python tooling cache
 __pycache__/
 *.pyc
+
+# Local Codex files
+.codex/
