@@ -1,27 +1,98 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:android="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;assembly=Microsoft.Maui.Controls"
+             android:Application.WindowSoftInputModeAdjust="Resize"
              x:Class="MuscleForge.Mobile.App">
   <Application.Resources>
     <ResourceDictionary>
-      <Style TargetType="ContentPage">
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light=#F8FAFC, Dark=#111827}" />
+      <Style TargetType="ContentPage" ApplyToDerivedTypes="True">
+        <Setter Property="BackgroundColor" Value="{DynamicResource PageBackground}" />
+        <Setter Property="SafeAreaEdges" Value="All" />
       </Style>
       <Style TargetType="Label">
-        <Setter Property="TextColor" Value="{AppThemeBinding Light=#111827, Dark=#F8FAFC}" />
-        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontFamily" Value="Manrope" />
+        <Setter Property="TextColor" Value="{DynamicResource TextPrimary}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="LineHeight" Value="1.3" />
       </Style>
-      <Style TargetType="Button">
-        <Setter Property="MinimumHeightRequest" Value="48" />
-        <Setter Property="BackgroundColor" Value="#1D4ED8" />
-        <Setter Property="TextColor" Value="White" />
-        <Setter Property="CornerRadius" Value="12" />
+      <Style x:Key="Eyebrow" TargetType="Label">
+        <Setter Property="FontFamily" Value="ManropeSemiBold" />
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="CharacterSpacing" Value="1.8" />
+        <Setter Property="TextColor" Value="{DynamicResource TextMuted}" />
+      </Style>
+      <Style x:Key="DisplayTitle" TargetType="Label">
+        <Setter Property="FontFamily" Value="ManropeExtraBold" />
+        <Setter Property="FontSize" Value="34" />
+        <Setter Property="LineHeight" Value="1.1" />
+        <Setter Property="CharacterSpacing" Value="-0.8" />
+        <Setter Property="TextColor" Value="{DynamicResource TextPrimary}" />
+      </Style>
+      <Style x:Key="SectionTitle" TargetType="Label">
+        <Setter Property="FontFamily" Value="ManropeExtraBold" />
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="CharacterSpacing" Value="-0.4" />
+        <Setter Property="TextColor" Value="{DynamicResource TextPrimary}" />
+      </Style>
+      <Style x:Key="BodyText" TargetType="Label">
+        <Setter Property="FontFamily" Value="Manrope" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="LineHeight" Value="1.4" />
+        <Setter Property="TextColor" Value="{DynamicResource TextSecondary}" />
+      </Style>
+      <Style x:Key="SmallText" TargetType="Label">
+        <Setter Property="FontFamily" Value="Manrope" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="LineHeight" Value="1.35" />
+        <Setter Property="TextColor" Value="{DynamicResource TextSecondary}" />
+      </Style>
+      <Style x:Key="BaseButton" TargetType="Button">
+        <Setter Property="FontFamily" Value="ManropeSemiBold" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="MinimumHeightRequest" Value="54" />
+        <Setter Property="Padding" Value="20,14" />
+        <Setter Property="BackgroundColor" Value="{DynamicResource Accent}" />
+        <Setter Property="TextColor" Value="{DynamicResource OnAccent}" />
+        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="VisualStateManager.VisualStateGroups">
+          <VisualStateGroupList>
+            <VisualStateGroup x:Name="CommonStates">
+              <VisualState x:Name="Normal"><VisualState.Setters><Setter Property="Opacity" Value="1" /></VisualState.Setters></VisualState>
+              <VisualState x:Name="Disabled"><VisualState.Setters><Setter Property="Opacity" Value="0.45" /></VisualState.Setters></VisualState>
+            </VisualStateGroup>
+          </VisualStateGroupList>
+        </Setter>
+      </Style>
+      <Style TargetType="Button" BasedOn="{StaticResource BaseButton}" />
+      <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
+        <Setter Property="BackgroundColor" Value="{DynamicResource SurfaceRaised}" />
+        <Setter Property="TextColor" Value="{DynamicResource TextPrimary}" />
+        <Setter Property="BorderWidth" Value="1" />
+        <Setter Property="BorderColor" Value="{DynamicResource Outline}" />
+      </Style>
+      <Style x:Key="QuietButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{DynamicResource Accent}" />
+        <Setter Property="MinimumHeightRequest" Value="44" />
+        <Setter Property="Padding" Value="12,8" />
+      </Style>
+      <Style x:Key="Card" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{DynamicResource Surface}" />
+        <Setter Property="Stroke" Value="{DynamicResource Outline}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="Padding" Value="20" />
+        <Setter Property="StrokeShape"><Setter.Value><RoundRectangle CornerRadius="24" /></Setter.Value></Setter>
       </Style>
       <Style TargetType="Entry">
+        <Setter Property="FontFamily" Value="Manrope" />
+        <Setter Property="FontSize" Value="14" />
         <Setter Property="MinimumHeightRequest" Value="48" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light=#111827, Dark=#F8FAFC}" />
-        <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light=#475569, Dark=#CBD5E1}" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{DynamicResource TextPrimary}" />
+        <Setter Property="PlaceholderColor" Value="{DynamicResource TextMuted}" />
       </Style>
+      <Style TargetType="ScrollView"><Setter Property="VerticalScrollBarVisibility" Value="Never" /></Style>
     </ResourceDictionary>
   </Application.Resources>
 </Application>

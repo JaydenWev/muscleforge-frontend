@@ -4,7 +4,7 @@ Native .NET MAUI Android app for MuscleForge, a personal workout tracker. Compan
 
 ## Current increment
 
-The initial shell has Workout, Templates, History, and Settings tabs. Settings persists an HTTPS API base URL and checks `/api/v1/status` through a generated C# client. The view model, endpoint validation, and HTTP adapter are independent of MAUI.
+The app has Workout, Templates, History, and Settings tabs, with a forest-and-lime palette, Manrope typography, and persistent dark, light, or system appearance. The Workout dashboard links to the feature previews and connection settings; workout logging and template editing are still planned. Settings persists an HTTPS API base URL and checks `/api/v1/status` through a generated C# client. The view model, endpoint validation, and HTTP adapter are independent of MAUI.
 
 Workout logging, authentication, SQLite drafts, and synchronization are future increments. See the [architecture baseline](docs/architecture.md) and [foundation decision](docs/decisions/0001-initial-foundation.md).
 
@@ -55,7 +55,7 @@ Debug builds use a development signing identity. Release signing, key backups, u
 
 ## Connect the API
 
-In Settings, enter the HTTPS server root (or proxy prefix), without `/api/v1`, credentials, query parameters, or fragments. Select **Save and check connection**. Success confirms API reachability/version; it does not certify database or workout availability.
+In Settings, enter the HTTPS server root (or proxy prefix), without `/api/v1`, credentials, query parameters, or fragments. Select **Save & connect**. Success confirms API reachability/version; it does not certify database or workout availability. A saved address starts as **Not checked** on a fresh launch; editing it clears the previous success state. Keep Tailscale connected on your phone when using a Tailscale server address.
 
 An Android emulator reaches the host through `10.0.2.2`; a phone needs a reachable LAN/VPN hostname. `localhost` refers to the device itself. The server certificate must include the hostname/IP used. A localhost-only certificate will not validate for the emulator alias.
 
@@ -82,4 +82,6 @@ CI checks client drift, runs portable tests, builds Android separately, verifies
 
 The first restore generates `packages.lock.json` files; commit them from your restore or CI artifacts. Existing lockfiles are enforced during CI restore.
 
-The configured Linux ARM64 development workspace has verified generated-client consistency, all portable tests, Debug and Release Android builds, and APK signatures. Standalone APK startup and the Settings screen have also been verified on a OnePlus 13 running Android 16. Run the remaining manual device smoke checks to verify other device behavior.
+The visual refresh has passed generated-client consistency, all 11 portable tests in Debug and Release, and full Debug and Release solution builds in the Linux ARM64 workspace. Earlier APK startup and Settings behavior were verified on a OnePlus 13 running Android 16; the refreshed UI still needs the [manual device smoke checks](tests/MuscleForge.Mobile.UiTests/README.md).
+
+Manrope fonts are bundled under the [SIL Open Font License](src/MuscleForge.Mobile/Resources/Fonts/Manrope-OFL.txt); the license is also included in the APK assets.

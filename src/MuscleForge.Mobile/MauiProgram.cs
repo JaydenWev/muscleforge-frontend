@@ -13,13 +13,25 @@ public static class MauiProgram
 {
     public static MauiApp CreateMauiApp()
     {
-        var builder = MauiApp.CreateBuilder().UseMauiApp<App>();
+        var builder = MauiApp.CreateBuilder()
+            .UseMauiApp<App>()
+            .ConfigureFonts(fonts =>
+            {
+                fonts.AddFont("Manrope-Regular.ttf", "Manrope");
+                fonts.AddFont("Manrope-SemiBold.ttf", "ManropeSemiBold");
+                fonts.AddFont("Manrope-ExtraBold.ttf", "ManropeExtraBold");
+            });
+        builder.Services.AddSingleton<AppAppearance>();
         builder.Services.AddHttpClient<MuscleForgeApiClient>(client => client.Timeout = TimeSpan.FromSeconds(15));
         builder.Services.AddSingleton<IConnectionSettings, ConnectionSettings>();
         builder.Services.AddTransient<IApiStatusService, ApiStatusService>();
-        builder.Services.AddTransient<ConnectionViewModel>();
+        builder.Services.AddSingleton<ConnectionViewModel>();
         builder.Services.AddTransient<ConnectionPage>();
         builder.Services.AddTransient<AppShell>();
+#if ANDROID
+        Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping("ForgeEntry", (handler, _) =>
+            handler.PlatformView.BackgroundTintList = Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.Transparent));
+#endif
 #if DEBUG
         builder.Logging.AddDebug();
 #endif

@@ -38,11 +38,41 @@ public sealed class ConnectionTests
         var vm = new ConnectionViewModel(api, settings);
         await vm.CheckConnectionCommand.ExecuteAsync(null);
         Assert.StartsWith("Could not reach", vm.Status);
+        Assert.Equal(ConnectionState.Unavailable, vm.State);
+        Assert.False(vm.IsConnected);
         Assert.False(vm.IsBusy);
         api.Fails = false;
         await vm.CheckConnectionCommand.ExecuteAsync(null);
         Assert.Equal("Connected to MuscleForge API v1.", vm.Status);
+        Assert.Equal(ConnectionState.Connected, vm.State);
         Assert.Equal("https://example.test/", settings.ApiBaseUrl);
+    }
+
+    [Fact]
+    public void SavedServerIsNotReportedAsConnectedUntilChecked()
+    {
+        var api = new FakeApi();
+        var vm = new ConnectionViewModel(api, new FakeSettings { ApiBaseUrl = "https://example.test/" });
+        Assert.Equal(ConnectionState.Ready, vm.State);
+        Assert.False(vm.IsConnected);
+        Assert.Equal("example.test", vm.ServerHost);
+        Assert.Equal(0, api.Calls);
+    }
+
+    [Fact]
+    public async Task EditingTheAddressClearsThePreviousServersSuccess()
+    {
+        var settings = new FakeSettings { ApiBaseUrl = "https://example.test/" };
+        var vm = new ConnectionViewModel(new FakeApi(), settings);
+        await vm.CheckConnectionCommand.ExecuteAsync(null);
+        Assert.True(vm.IsConnected);
+        vm.ApiBaseUrl = "https://another.test/";
+        Assert.False(vm.IsConnected);
+        Assert.Equal(ConnectionState.Ready, vm.State);
+        Assert.Equal("another.test", vm.ServerHost);
+        Assert.Equal("https://example.test/", settings.ApiBaseUrl);
+        vm.ApiBaseUrl = "";
+        Assert.Equal(ConnectionState.NotConfigured, vm.State);
     }
 
     [Fact]
