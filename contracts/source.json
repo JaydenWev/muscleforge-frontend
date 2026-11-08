@@ -4,5 +4,5 @@
   "backendVersion": "0.1.0-dev",
   "apiVersion": "v1",
   "contractSha256": "b710171f404061b85209e95e4e64b6f67c8dd869c75e3fb8075d01daddb73a3a",
-  "generatorVersion": 1
+  "generatorVersion": 2
 }
