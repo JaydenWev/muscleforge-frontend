@@ -72,9 +72,9 @@ python3 scripts/generate-api-client.py
 python3 scripts/generate-api-client.py --check
 ```
 
-Generator v1 is committed in `scripts/generate-api-client.py`, has no third-party dependencies, and supports the initial public status operation and required string DTOs. Unsupported schemas fail explicitly. Add request/auth/error support or migrate to a pinned general-purpose generator with the next slice. Never hand-edit generated files.
+Generator v2 is committed in `scripts/generate-api-client.py`, has no third-party dependencies, and supports the pinned authentication/status contract, JSON bodies, scalar path/query parameters and typed API problems. Unsupported schemas fail explicitly. Never hand-edit generated files. See [contract tooling and the two-PR workflow](docs/api-contract.md) for supported shapes, safe errors, provenance, compatibility checks and deployment order.
 
-Update the snapshot deliberately from a specific backend commit, update its provenance/hash, regenerate, and review the diff.
+Update the snapshot deliberately from a specific backend commit, update its provenance/hash, regenerate, and review the diff. CI publishes the exact pinned contract and generated client under the frontend revision. Native sign-in and protected credential storage remain MF-14.
 
 ## Checks and remaining setup
 
@@ -85,3 +85,5 @@ The first restore generates `packages.lock.json` files; commit them from your re
 The visual refresh has passed generated-client consistency, all 11 portable tests in Debug and Release, and full Debug and Release solution builds in the Linux ARM64 workspace. Earlier APK startup and Settings behavior were verified on a OnePlus 13 running Android 16; the refreshed UI still needs the [manual device smoke checks](tests/MuscleForge.Mobile.UiTests/README.md).
 
 Manrope fonts are bundled under the [SIL Open Font License](src/MuscleForge.Mobile/Resources/Fonts/Manrope-OFL.txt); the license is also included in the APK assets.
+
+MF-13 verification passes all 21 portable .NET tests and 12 Python contract tests, including actual CLI drift/hash/version failures. A clean archived frontend checkout restored with locked dependencies, generated and built/tested the portable Release projects without referencing a backend checkout or Android project. The full Debug solution build passed with warnings treated as errors, and the APK payload check verified standalone arm64-v8a/x86_64 managed assemblies. A separate integration harness used this generated client against the real Identity API and isolated PostgreSQL for login, refresh, account identity and typed validation/authentication problems. Native sign-in, SecureStorage and device acceptance remain MF-14; no new device verification is claimed.
