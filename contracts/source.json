@@ -1,8 +1,8 @@
 {
   "backendRepository": "https://github.com/JaydenWev/muscleforge-backend",
-  "backendCommit": "a4101aef8d5b769e3621687eee66dfa32e98b196",
+  "backendCommit": "71babef6771fc6c996305d0b0806916e76616498",
   "backendVersion": "0.1.0-dev",
   "apiVersion": "v1",
-  "contractSha256": "b710171f404061b85209e95e4e64b6f67c8dd869c75e3fb8075d01daddb73a3a",
+  "contractSha256": "3893bd984caf185c92ba5d703a07f53675dee8000608d657746563ce67f4e34c",
   "generatorVersion": 2
 }

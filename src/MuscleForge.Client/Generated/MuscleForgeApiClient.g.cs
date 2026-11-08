@@ -9,6 +9,67 @@ using System.Text.Json.Serialization;
 
 namespace MuscleForge.Client;
 
+public sealed class LoginResponse
+{
+    [JsonPropertyName("accessToken")]
+    public required string AccessToken { get; init; }
+
+    [JsonPropertyName("expiresIn")]
+    [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
+    public required long ExpiresIn { get; init; }
+
+    [JsonPropertyName("refreshToken")]
+    public required string RefreshToken { get; init; }
+
+    [JsonPropertyName("tokenType")]
+    public string? TokenType { get; init; }
+
+}
+
+public sealed class LoginRequest
+{
+    [JsonPropertyName("email")]
+    public required string? Email { get; init; }
+
+    [JsonPropertyName("password")]
+    public required string? Password { get; init; }
+
+}
+
+public sealed class CurrentUserResponse
+{
+    [JsonPropertyName("email")]
+    public required string Email { get; init; }
+
+    [JsonPropertyName("id")]
+    public required Guid Id { get; init; }
+
+}
+
+public sealed class RefreshResponse
+{
+    [JsonPropertyName("accessToken")]
+    public required string AccessToken { get; init; }
+
+    [JsonPropertyName("expiresIn")]
+    [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
+    public required long ExpiresIn { get; init; }
+
+    [JsonPropertyName("refreshToken")]
+    public required string RefreshToken { get; init; }
+
+    [JsonPropertyName("tokenType")]
+    public string? TokenType { get; init; }
+
+}
+
+public sealed class RefreshRequest
+{
+    [JsonPropertyName("refreshToken")]
+    public required string? RefreshToken { get; init; }
+
+}
+
 public sealed class ApiStatusResponse
 {
     [JsonPropertyName("apiVersion")]
@@ -67,6 +128,42 @@ public sealed class MuscleForgeApiClient(HttpClient httpClient)
             catch (JsonException) { }
         }
         throw new ApiException(response.StatusCode, problem, response.Headers.RetryAfter);
+    }
+
+    public async Task<LoginResponse> LoginAsync(
+        Uri baseUrl, LoginRequest body, CancellationToken cancellationToken = default)
+    {
+        var path = $"api/v1/auth/login";
+        using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(baseUrl, path));
+        request.Content = JsonContent.Create(body);
+        using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        if (response.StatusCode != HttpStatusCode.OK) await ThrowApiException(response, cancellationToken).ConfigureAwait(false);
+        return await response.Content.ReadFromJsonAsync<LoginResponse>(cancellationToken: cancellationToken).ConfigureAwait(false)
+            ?? throw new JsonException("The API returned an empty response.");
+    }
+
+    public async Task<CurrentUserResponse> GetCurrentUserAsync(
+        Uri baseUrl, string bearerToken, CancellationToken cancellationToken = default)
+    {
+        var path = $"api/v1/auth/me";
+        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(baseUrl, path));
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearerToken);
+        using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        if (response.StatusCode != HttpStatusCode.OK) await ThrowApiException(response, cancellationToken).ConfigureAwait(false);
+        return await response.Content.ReadFromJsonAsync<CurrentUserResponse>(cancellationToken: cancellationToken).ConfigureAwait(false)
+            ?? throw new JsonException("The API returned an empty response.");
+    }
+
+    public async Task<RefreshResponse> RefreshAsync(
+        Uri baseUrl, RefreshRequest body, CancellationToken cancellationToken = default)
+    {
+        var path = $"api/v1/auth/refresh";
+        using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(baseUrl, path));
+        request.Content = JsonContent.Create(body);
+        using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        if (response.StatusCode != HttpStatusCode.OK) await ThrowApiException(response, cancellationToken).ConfigureAwait(false);
+        return await response.Content.ReadFromJsonAsync<RefreshResponse>(cancellationToken: cancellationToken).ConfigureAwait(false)
+            ?? throw new JsonException("The API returned an empty response.");
     }
 
     public async Task<ApiStatusResponse> GetApiStatusAsync(
