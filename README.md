@@ -17,7 +17,7 @@ Workout logging, authentication, SQLite drafts, and synchronization are future i
 | Java | Eclipse Temurin JDK 21.0.13 (CI) |
 | Android platform / build tools | API 36 / 36.0.0 |
 | Minimum Android | API 24, Android 7.0; confirm the owner's phone before release |
-| Python | 3.11+; CI uses 3.12 |
+| Python | 3.11+ for the Android APK payload utility only |
 
 Android is the only app target. `local.muscleforge.app` is a development application ID that makes no domain ownership claim. Finalize the ID and signing identity before the first signed personal release.
 
@@ -25,10 +25,11 @@ Android is the only app target. `local.muscleforge.app` is a development applica
 
 ## Build the platform-independent code
 
-Only .NET and Python are needed; no Android workload, backend checkout, or database:
+The portable projects need .NET and Bash; no Android workload, backend checkout or database:
 
 ```bash
-python3 scripts/generate-api-client.py --check
+dotnet tool restore
+scripts/generate-api-client.sh --check
 dotnet restore tests/MuscleForge.Mobile.UnitTests/MuscleForge.Mobile.UnitTests.csproj
 dotnet test tests/MuscleForge.Mobile.UnitTests/MuscleForge.Mobile.UnitTests.csproj -c Release --no-restore
 ```
@@ -68,11 +69,11 @@ Only the API URL is stored in Preferences. Credentials will use SecureStorage wh
 `contracts/openapi.json` is pinned from the backend. `contracts/source.json` records its backend commit, version, SHA-256, and generator version. Builds/generation never fetch a server or another repository.
 
 ```bash
-python3 scripts/generate-api-client.py
-python3 scripts/generate-api-client.py --check
+scripts/generate-api-client.sh
+scripts/generate-api-client.sh --check
 ```
 
-Generator v2 is committed in `scripts/generate-api-client.py`, has no third-party dependencies, and supports the pinned authentication/status contract, JSON bodies, scalar path/query parameters and typed API problems. Unsupported schemas fail explicitly. Never hand-edit generated files. See [contract tooling and the two-PR workflow](docs/api-contract.md) for supported shapes, safe errors, provenance, compatibility checks and deployment order.
+NSwag.ConsoleCore 14.7.1 is pinned in the local .NET tool manifest. `nswag.json` and `nswag-fixture.json` generate the C# client/DTOs and test fixture; the shell wrapper checks the contract hash and generated-file drift. A small application facade handles per-request bearer headers and safe errors. Never hand-edit generated files. See [the contract workflow](docs/api-contract.md).
 
 Update the snapshot deliberately from a specific backend commit, update its provenance/hash, regenerate, and review the diff. CI publishes the exact pinned contract and generated client under the frontend revision. Native sign-in and protected credential storage remain MF-14.
 
@@ -86,4 +87,4 @@ The visual refresh has passed generated-client consistency, all 11 portable test
 
 Manrope fonts are bundled under the [SIL Open Font License](src/MuscleForge.Mobile/Resources/Fonts/Manrope-OFL.txt); the license is also included in the APK assets.
 
-MF-13 verification passes all 21 portable .NET tests and 12 Python contract tests, including actual CLI drift/hash/version failures. A clean archived frontend checkout restored with locked dependencies, generated and built/tested the portable Release projects without referencing a backend checkout or Android project. The full Debug solution build passed with warnings treated as errors, and the APK payload check verified standalone arm64-v8a/x86_64 managed assemblies. A separate integration harness used this generated client against the real Identity API and isolated PostgreSQL for login, refresh, account identity and typed validation/authentication problems. Native sign-in, SecureStorage and device acceptance remain MF-14; no new device verification is claimed.
+MF-13 tooling has been simplified to pinned NSwag generation and a thin shell wrapper. The custom Python generator/parser tests were removed; HTTP behavior stays covered by portable C# tests. The facade uses the generated DTOs directly. All 23 portable tests pass. A fresh isolated checkout restored NSwag, reproduced both generated files and passed the portable Release tests without backend source. Android Debug compilation and the standalone APK payload check pass. The generated client also passed real API/PostgreSQL login/refresh/me and typed-error checks. Native sign-in, SecureStorage and device acceptance remain MF-14.
