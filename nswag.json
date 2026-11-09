@@ -1,0 +1,20 @@
+{
+  "runtime": "Net100",
+  "documentGenerator": { "fromDocument": { "url": "contracts/openapi.json" } },
+  "codeGenerators": {
+    "openApiToCSharpClient": {
+      "className": "RawApiClient",
+      "namespace": "MuscleForge.Client",
+      "exceptionClass": "RawApiException",
+      "jsonLibrary": "SystemTextJson",
+      "jsonLibraryVersion": 10.0,
+      "newLineBehavior": "LF",
+      "injectHttpClient": true,
+      "disposeHttpClient": false,
+      "useBaseUrl": true,
+      "generateClientInterfaces": false,
+      "generateExceptionClasses": true,
+      "output": "$(Output)"
+    }
+  }
+}
