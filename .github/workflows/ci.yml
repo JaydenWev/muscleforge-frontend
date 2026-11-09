@@ -17,12 +17,8 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           global-json-file: global.json
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Test contract generation and rejection cases
-        run: python3 -m unittest discover -s tests/contract_tooling -p 'test_*.py'
-      - run: python3 scripts/generate-api-client.py --check
+      - run: dotnet tool restore
+      - run: scripts/generate-api-client.sh --check
       - run: dotnet restore tests/MuscleForge.Mobile.UnitTests/MuscleForge.Mobile.UnitTests.csproj
       - run: dotnet test tests/MuscleForge.Mobile.UnitTests/MuscleForge.Mobile.UnitTests.csproj -c Release --no-restore --logger trx
       - name: Publish the exact pinned client contract
@@ -32,8 +28,13 @@ jobs:
           path: |
             contracts/openapi.json
             contracts/source.json
-            scripts/generate-api-client.py
-            src/MuscleForge.Client/Generated/MuscleForgeApiClient.g.cs
+            scripts/generate-api-client.sh
+            .config/dotnet-tools.json
+            nswag.json
+            nswag-fixture.json
+            contracts/fixtures/
+            tests/MuscleForge.Mobile.UnitTests/GeneratedApiClientFixture.g.cs
+            src/MuscleForge.Client/Generated/RawApiClient.g.cs
           if-no-files-found: error
       - uses: actions/upload-artifact@v4
         if: always()
