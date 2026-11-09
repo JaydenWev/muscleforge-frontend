@@ -1,8 +1,9 @@
 {
   "backendRepository": "https://github.com/JaydenWev/muscleforge-backend",
-  "backendCommit": "71babef6771fc6c996305d0b0806916e76616498",
+  "backendCommit": "24567a7b195b663d4dd2d99ecc5b40971a99a3e0",
   "backendVersion": "0.1.0-dev",
   "apiVersion": "v1",
-  "contractSha256": "3893bd984caf185c92ba5d703a07f53675dee8000608d657746563ce67f4e34c",
-  "generatorVersion": 2
+  "contractSha256": "66715ce7d5b7572567248db444d4b3b816a6cd1a8e478ea0e07fc7213845e902",
+  "generatorVersion": "14.7.1",
+  "generator": "NSwag.ConsoleCore"
 }

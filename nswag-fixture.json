@@ -1,0 +1,17 @@
+{
+  "runtime": "Net100",
+  "documentGenerator": { "fromDocument": { "url": "contracts/fixtures/authenticated-feature.json" } },
+  "codeGenerators": {
+    "openApiToCSharpClient": {
+      "className": "FixtureApiClient",
+      "namespace": "MuscleForge.Client.Fixture",
+      "jsonLibrary": "SystemTextJson",
+      "jsonLibraryVersion": 10.0,
+      "newLineBehavior": "LF",
+      "injectHttpClient": true,
+      "disposeHttpClient": false,
+      "useBaseUrl": true,
+      "output": "$(Output)"
+    }
+  }
+}

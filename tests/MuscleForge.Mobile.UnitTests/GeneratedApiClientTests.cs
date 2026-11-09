@@ -94,14 +94,36 @@ public partial class GeneratedApiClientTests
     public async Task AuthSuccessSupportsStringExpiryAndBearerMe()
     {
         var id = Guid.NewGuid();
-        using var http = new HttpClient(new Handler((request, _) => Task.FromResult(request.RequestUri!.AbsolutePath.EndsWith("login")
-            ? Json(HttpStatusCode.OK, "{\"accessToken\":\"access\",\"refreshToken\":\"refresh\",\"expiresIn\":\"900\"}")
-            : Json(HttpStatusCode.OK, $"{{\"id\":\"{id}\",\"email\":\"test@example.test\"}}"))));
+        using var http = new HttpClient(new Handler(async (request, ct) =>
+        {
+            if (request.RequestUri!.AbsolutePath.EndsWith("login"))
+            {
+                Assert.Null(request.Headers.Authorization);
+                using var body = JsonDocument.Parse(await request.Content!.ReadAsStringAsync(ct));
+                Assert.Equal("test", body.RootElement.GetProperty("email").GetString());
+                Assert.Equal("test", body.RootElement.GetProperty("password").GetString());
+                return Json(HttpStatusCode.OK, "{\"accessToken\":\"access\",\"refreshToken\":\"refresh\",\"expiresIn\":\"900\"}");
+            }
+            Assert.Equal("Bearer", request.Headers.Authorization!.Scheme);
+            Assert.Equal("access", request.Headers.Authorization.Parameter);
+            return Json(HttpStatusCode.OK, $"{{\"id\":\"{id}\",\"email\":\"test@example.test\"}}");
+        }));
         var client = new MuscleForgeApiClient(http);
         var login = await client.LoginAsync(new Uri("https://example.test/"), new LoginRequest { Email = "test", Password = "test" }, TestContext.Current.CancellationToken);
         Assert.Equal(900, login.ExpiresIn);
         var me = await client.GetCurrentUserAsync(new Uri("https://example.test/"), login.AccessToken, TestContext.Current.CancellationToken);
         Assert.Equal(id, me.Id);
+        Assert.Null(http.DefaultRequestHeaders.Authorization);
+    }
+
+    [Fact]
+    public async Task LoginAcceptsNumericExpiry()
+    {
+        using var http = new HttpClient(new Handler((_, _) => Task.FromResult(
+            Json(HttpStatusCode.OK, "{\"accessToken\":\"access\",\"refreshToken\":\"refresh\",\"expiresIn\":900}"))));
+        var result = await new MuscleForgeApiClient(http).LoginAsync(new Uri("https://example.test/"),
+            new LoginRequest { Email = "test", Password = "test" }, TestContext.Current.CancellationToken);
+        Assert.Equal(900, result.ExpiresIn);
     }
 
     [Fact]
@@ -149,6 +171,16 @@ public partial class GeneratedApiClientTests
         }));
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => new MuscleForgeApiClient(http).GetApiStatusAsync(
             new Uri("https://example.test/"), cancellation.Token));
+    }
+
+    [Fact]
+    public async Task MalformedSuccessDoesNotExposeResponseBody()
+    {
+        using var http = new HttpClient(new Handler((_, _) => Task.FromResult(Json(HttpStatusCode.OK, "secret-token-marker"))));
+        var error = await Assert.ThrowsAsync<JsonException>(() => new MuscleForgeApiClient(http).GetApiStatusAsync(
+            new Uri("https://example.test/"), TestContext.Current.CancellationToken));
+        Assert.DoesNotContain("secret-token-marker", error.ToString());
+        Assert.Null(error.InnerException);
     }
 
     [Fact]

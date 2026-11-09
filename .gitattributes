@@ -1,1 +1,3 @@
 * text=auto eol=lf
+# Keep NSwag output verbatim and deterministic across checkouts.
+*.g.cs text eol=lf whitespace=-blank-at-eol
