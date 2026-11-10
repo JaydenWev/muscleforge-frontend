@@ -12,6 +12,7 @@ public sealed class SessionNavigator
     private Window? window;
     private SignInViewModel? viewModel;
     private SessionPage currentPage = SessionPage.Loading;
+    private CancellationTokenSource? restorationCancellation;
 
     public SessionNavigator(IServiceProvider services, IAuthSession session)
     {
@@ -22,20 +23,35 @@ public sealed class SessionNavigator
 
     public Window CreateWindow()
     {
+        restorationCancellation = new CancellationTokenSource();
         var loading = new ContentPage { Content = new VerticalStackLayout
         {
             VerticalOptions = LayoutOptions.Center, Padding = 24, Spacing = 16,
-            Children = { new ActivityIndicator { IsRunning = true }, new Label { Text = "Restoring your session…", HorizontalTextAlignment = TextAlignment.Center } }
+            Children =
+            {
+                new ActivityIndicator { IsRunning = true },
+                new Label { Text = "Restoring your session…", HorizontalTextAlignment = TextAlignment.Center },
+                new Button
+                {
+                    Text = "Cancel", AutomationId = "RestoreSessionCancelButton",
+                    Command = new Command(() => restorationCancellation?.Cancel())
+                }
+            }
         } };
         window = new Window(loading);
-        _ = RestoreAsync();
+        _ = RestoreAsync(restorationCancellation.Token);
         return window;
     }
 
-    private async Task RestoreAsync()
+    private async Task RestoreAsync(CancellationToken cancellationToken)
     {
-        try { await session.RestoreAsync(); }
+        try { await session.RestoreAsync(cancellationToken); }
         catch (Exception) { }
+        finally
+        {
+            restorationCancellation?.Dispose();
+            restorationCancellation = null;
+        }
         Show();
     }
 
