@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:MuscleForge.Mobile.Core.ViewModels;assembly=MuscleForge.Mobile.Core"
+             x:Class="MuscleForge.Mobile.Views.SignInPage" x:DataType="vm:SignInViewModel" Title="Sign in">
+  <ScrollView>
+    <VerticalStackLayout Padding="24,32,24,32" Spacing="24">
+      <VerticalStackLayout Spacing="10">
+        <Label Text="MUSCLEFORGE" Style="{StaticResource Eyebrow}" />
+        <Label Text="Welcome back.&#10;Let's get to work." Style="{StaticResource DisplayTitle}" SemanticProperties.HeadingLevel="Level1" />
+        <Label Text="Sign in to your account to continue." Style="{StaticResource BodyText}" />
+      </VerticalStackLayout>
+      <Border Style="{StaticResource Card}">
+        <VerticalStackLayout Spacing="16">
+          <Label Text="EMAIL" Style="{StaticResource Eyebrow}" />
+          <Entry Text="{Binding Email}" Placeholder="you@example.com" Keyboard="Email" ReturnType="Next" MaxLength="254" IsEnabled="{Binding CanEdit}" SemanticProperties.Description="Email address" AutomationId="SignInEmail" />
+          <Label Text="PASSWORD" Style="{StaticResource Eyebrow}" />
+          <Entry Text="{Binding Password}" Placeholder="Password" IsPassword="True" ReturnType="Go" ReturnCommand="{Binding SignInCommand}" MaxLength="1024" IsEnabled="{Binding CanEdit}" SemanticProperties.Description="Password" AutomationId="SignInPassword" />
+          <Label Text="{Binding Message}" Style="{StaticResource SmallText}" AutomationId="SignInStatus" />
+          <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="{DynamicResource Accent}" />
+          <Button Text="Cancel" Command="{Binding CancelCommand}" IsVisible="{Binding IsCancelable}" Style="{StaticResource SecondaryButton}" AutomationId="SignInCancelButton" />
+          <Button Text="Sign in" Command="{Binding SignInCommand}" IsEnabled="{Binding CanEdit}" AutomationId="SignInButton" />
+          <Button Text="Clear saved sign-in" Command="{Binding SignOutCommand}" IsEnabled="{Binding CanEdit}" Style="{StaticResource SecondaryButton}" />
+          <Button Text="Retry saved session" Command="{Binding RetryCommand}" IsEnabled="{Binding CanEdit}" Style="{StaticResource SecondaryButton}" />
+        </VerticalStackLayout>
+      </Border>
+      <Button Text="Server settings" Clicked="OnServerSettings" IsEnabled="{Binding CanEdit}" Style="{StaticResource SecondaryButton}" />
+    </VerticalStackLayout>
+  </ScrollView>
+</ContentPage>
