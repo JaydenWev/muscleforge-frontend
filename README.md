@@ -4,9 +4,9 @@ Native .NET MAUI Android app for MuscleForge, a personal workout tracker. Compan
 
 ## Current increment
 
-The app has Workout, Templates, History, and Settings tabs, with a forest-and-lime palette, Manrope typography, and persistent dark, light, or system appearance. The Workout dashboard links to the feature previews and connection settings; workout logging and template editing are still planned. Settings persists an HTTPS API base URL and checks `/api/v1/status` through a generated C# client. The view model, endpoint validation, and HTTP adapter are independent of MAUI.
+The app starts with native sign-in, restores a saved session, and opens Workout, Templates, History, and Settings tabs after resolving the account from the API. Settings shows the account and offers sign-out. Server configuration remains available before sign-in. The app uses a forest-and-lime palette, Manrope typography, and persistent dark, light, or system appearance. Workout logging and template editing are still planned.
 
-Workout logging, authentication, SQLite drafts, and synchronization are future increments. See the [architecture baseline](docs/architecture.md) and [foundation decision](docs/decisions/0001-initial-foundation.md).
+Access tokens stay in memory; refresh credentials use Android SecureStorage. The portable session service coordinates refresh and verifies server/account identity. See [native authentication and its verification limits](docs/native-auth.md), the [architecture baseline](docs/architecture.md), and the [foundation decision](docs/decisions/0001-initial-foundation.md). SQLite drafts and synchronization are future increments.
 
 ## Requirements
 
@@ -62,7 +62,7 @@ An Android emulator reaches the host through `10.0.2.2`; a phone needs a reachab
 
 Only HTTPS is accepted. Debug builds trust a user-installed development CA alongside system CAs. Release builds trust system CAs only. Configure a trusted certificate and device trust; certificate and hostname validation stay enabled.
 
-Only the API URL is stored in Preferences. Credentials will use SecureStorage when authentication is implemented. Android backup is disabled from the initial scaffold.
+The API URL and appearance choice use Preferences. Credentials use SecureStorage; passwords are cleared from the sign-in view model after each attempt. Android backup is disabled. Sign out before changing the server URL. Sign-out removes local credentials; it does not revoke tokens on the server. No public registration is available: sign in with the account provisioned by the backend's owner environment settings.
 
 ## Contract and generated client
 
@@ -75,11 +75,11 @@ scripts/generate-api-client.sh --check
 
 NSwag.ConsoleCore 14.7.1 is pinned in the local .NET tool manifest. `nswag.json` and `nswag-fixture.json` generate the C# client/DTOs and test fixture; the shell wrapper checks the contract hash and generated-file drift. A small application facade handles per-request bearer headers and safe errors. Never hand-edit generated files. See [the contract workflow](docs/api-contract.md).
 
-Update the snapshot deliberately from a specific backend commit, update its provenance/hash, regenerate, and review the diff. CI publishes the exact pinned contract and generated client under the frontend revision. Native sign-in and protected credential storage remain MF-14.
+Update the snapshot deliberately from a specific backend commit, update its provenance/hash, regenerate, and review the diff. CI publishes the exact pinned contract and generated client under the frontend revision. MF-14 consumes this contract without changing the snapshot or generator.
 
 ## Checks and remaining setup
 
-CI checks client drift, runs portable tests, builds Android separately, verifies that managed code is packaged for every APK ABI, and publishes signed debug APKs and resolved lockfiles. Tests cover HTTPS validation, path prefixes, invalid input, unavailable servers/retry, and incompatible API versions. [Device smoke checks](tests/MuscleForge.Mobile.UiTests/README.md) are manual until Appium coverage is added with the first authenticated flow.
+CI checks client drift, runs portable tests, builds Android separately, verifies that managed code is packaged for every APK ABI, and publishes signed debug APKs and resolved lockfiles. Tests cover HTTP behavior, session restoration, coordinated refresh, storage/cancellation failures, and navigation decisions. [Device smoke checks](tests/MuscleForge.Mobile.UiTests/README.md) are manual until Appium coverage is added. Portable navigation tests do not establish actual Android back-stack or SecureStorage behavior.
 
 The first restore generates `packages.lock.json` files; commit them from your restore or CI artifacts. Existing lockfiles are enforced during CI restore.
 
@@ -87,4 +87,4 @@ The visual refresh has passed generated-client consistency, all 11 portable test
 
 Manrope fonts are bundled under the [SIL Open Font License](src/MuscleForge.Mobile/Resources/Fonts/Manrope-OFL.txt); the license is also included in the APK assets.
 
-MF-13 tooling has been simplified to pinned NSwag generation and a thin shell wrapper. The custom Python generator/parser tests were removed; HTTP behavior stays covered by portable C# tests. The facade uses the generated DTOs directly. All 23 portable tests pass. A fresh isolated checkout restored NSwag, reproduced both generated files and passed the portable Release tests without backend source. Android Debug compilation and the standalone APK payload check pass. The generated client also passed real API/PostgreSQL login/refresh/me and typed-error checks. Native sign-in, SecureStorage and device acceptance remain MF-14.
+MF-13 tooling uses pinned NSwag generation and a thin shell wrapper. The facade uses generated DTOs directly. Its 23-test baseline, isolated generation/build, Android packaging, and real API/PostgreSQL contract checks passed before MF-14. MF-14 adds the session and native sign-in implementation; current verification and outstanding device acceptance are recorded in [native authentication](docs/native-auth.md).

@@ -14,5 +14,5 @@ public partial class App : Application
     }
 
     protected override Window CreateWindow(IActivationState? activationState) =>
-        new(services.GetRequiredService<AppShell>());
+        services.GetRequiredService<SessionNavigator>().CreateWindow();
 }

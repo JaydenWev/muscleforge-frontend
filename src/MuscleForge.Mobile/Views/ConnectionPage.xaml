@@ -15,7 +15,16 @@
         <Label Text="A few details. A better place to train." Style="{StaticResource BodyText}" />
       </VerticalStackLayout>
 
-      <Border Style="{StaticResource Card}">
+      <Border x:Name="AccountPanel" Style="{StaticResource Card}" IsVisible="False" x:DataType="vm:SignInViewModel">
+        <VerticalStackLayout Spacing="12">
+          <Label Text="Account" Style="{StaticResource SectionTitle}" />
+          <Label Text="{Binding AccountEmail}" Style="{StaticResource BodyText}" />
+          <Label Text="{Binding Message}" Style="{StaticResource SmallText}" />
+          <Button Text="Sign out" Command="{Binding SignOutCommand}" IsEnabled="{Binding CanEdit}" AutomationId="SignOutButton" />
+        </VerticalStackLayout>
+      </Border>
+      <Label x:Name="ServerLockedMessage" Text="Sign out to change your server address." Style="{StaticResource SmallText}" IsVisible="False" />
+      <Border x:Name="ServerPanel" Style="{StaticResource Card}">
         <VerticalStackLayout Spacing="20">
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
             <HorizontalStackLayout Spacing="10" VerticalOptions="Center">
