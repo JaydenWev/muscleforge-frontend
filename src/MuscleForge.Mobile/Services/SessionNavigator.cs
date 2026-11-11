@@ -68,6 +68,7 @@ public sealed class SessionNavigator
         currentPage = next;
         viewModel?.Dispose();
         viewModel = null;
+        if (window.Page is AppShell previousShell) previousShell.Dispose();
         if (next == SessionPage.Protected) window.Page = services.GetRequiredService<AppShell>();
         else
         {

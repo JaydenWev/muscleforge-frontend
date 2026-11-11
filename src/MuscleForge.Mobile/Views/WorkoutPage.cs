@@ -87,7 +87,9 @@ public sealed class WorkoutPage : ContentPage
             }
         });
 
-        Content = ForgeUi.PageContent(brand, hero,
+        var catalog = ForgeUi.Card(new VerticalStackLayout { Spacing = 12, Children = { ForgeUi.Text("Your exercises", "SectionTitle"), ForgeUi.Text("Manage the movements in your catalog."), ForgeUi.Button("Open exercises  →", () => Shell.Current.GoToAsync("//exercises"), secondary: true) } });
+
+        Content = ForgeUi.PageContent(brand, hero, catalog,
             new VerticalStackLayout { Spacing = 14, Children = { ForgeUi.Text("Make it your routine", "SectionTitle"), explore } }, server);
     }
 
