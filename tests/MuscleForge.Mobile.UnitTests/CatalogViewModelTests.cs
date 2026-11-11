@@ -76,6 +76,16 @@ public class CatalogViewModelTests
         Assert.False(await vm.SaveAsync(TestContext.Current.CancellationToken));
     }
     [Fact]
+    public async Task Acknowledged_create_cannot_be_submitted_again_while_closing()
+    {
+        var gateway = new FakeGateway();
+        using var vm = new ExerciseEditorViewModel(gateway, new FakeSession()) { Name = "Press", Equipment = "Dumbbells" };
+        Assert.True(await vm.SaveAsync(TestContext.Current.CancellationToken));
+        Assert.False(await vm.SaveAsync(TestContext.Current.CancellationToken));
+        Assert.Equal(1, gateway.Writes);
+        Assert.NotNull(vm.SavedExercise);
+    }
+    [Fact]
     public async Task Validation_response_preserves_editor_fields_without_retry()
     {
         var gateway = new FakeGateway { WriteError = new ApiException(HttpStatusCode.BadRequest,

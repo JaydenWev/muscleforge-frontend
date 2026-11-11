@@ -57,6 +57,11 @@ public sealed class ExerciseEditorViewModel : ObservableObject, IDisposable
     private async Task<bool> WriteAsync(bool archive, CancellationToken ct)
     {
         if (IsBusy || disposed || invalidated || NeedsLoad || (archive && (id is null || IsArchived))) return false;
+        if (id is null && SavedExercise is not null)
+        {
+            ErrorMessage = "This exercise is already saved. Return to the catalog to add another.";
+            return false;
+        }
         var trimmedName = Name?.Trim() ?? ""; var trimmedEquipment = Equipment?.Trim() ?? "";
         if (trimmedName.Length is 0 or > 100 || trimmedEquipment.Length is 0 or > 100 || !Enum.IsDefined(LoadConvention))
         { ValidationMessage = "Enter a name and equipment, each up to 100 characters, and choose a load convention."; return false; }

@@ -8,6 +8,7 @@ public sealed class ExerciseEditorPage : ContentPage
     private readonly ExerciseEditorViewModel viewModel;
     private readonly bool editing;
     private bool started;
+    private bool committing;
 
     public ExerciseEditorPage(ExerciseEditorViewModel viewModel, bool editing)
     {
@@ -32,6 +33,8 @@ public sealed class ExerciseEditorPage : ContentPage
         status.SetBinding(Label.TextProperty, new Binding(nameof(viewModel.IsArchived), converter: new ArchiveStatusConverter()));
         var validation = ForgeUi.Text(""); validation.SetBinding(Label.TextProperty, nameof(viewModel.ValidationMessage));
         var error = ForgeUi.Text(""); error.SetBinding(Label.TextProperty, nameof(viewModel.ErrorMessage));
+        var saved = ForgeUi.Text("Exercise saved. Return to the catalog.", "SmallText");
+        saved.SetBinding(IsVisibleProperty, new Binding(nameof(viewModel.SavedExercise), converter: new SavedExerciseConverter()));
         var busy = new ActivityIndicator(); busy.SetBinding(ActivityIndicator.IsRunningProperty, nameof(viewModel.IsBusy)); busy.SetBinding(IsVisibleProperty, nameof(viewModel.IsBusy));
         var cancel = new Button { Text = "Cancel operation", Style = ForgeUi.Style("SecondaryButton"), Command = viewModel.CancelCommand };
         cancel.SetBinding(IsVisibleProperty, nameof(viewModel.IsBusy));
@@ -44,7 +47,7 @@ public sealed class ExerciseEditorPage : ContentPage
         archive.SetBinding(IsEnabledProperty, ReadyBinding());
         if (editing) archive.SetBinding(IsVisibleProperty, new Binding(nameof(viewModel.IsArchived), converter: new InverseBooleanConverter()));
         Content = ForgeUi.PageContent(ForgeUi.Header("YOUR LIBRARY", Title, "Name and equipment are required."), status,
-            new VerticalStackLayout { Spacing = 12, Children = { ForgeUi.Text("Name", "Eyebrow"), name, ForgeUi.Text("Equipment", "Eyebrow"), equipment, ForgeUi.Text("Load convention", "Eyebrow"), convention, guidance, validation, error, busy, cancel, retry, save, archive } });
+            new VerticalStackLayout { Spacing = 12, Children = { ForgeUi.Text("Name", "Eyebrow"), name, ForgeUi.Text("Equipment", "Eyebrow"), equipment, ForgeUi.Text("Load convention", "Eyebrow"), convention, guidance, validation, error, saved, busy, cancel, retry, save, archive } });
     }
 
     protected override async void OnAppearing()
@@ -58,16 +61,21 @@ public sealed class ExerciseEditorPage : ContentPage
     private static MultiBinding ReadyBinding() => new()
     {
         Converter = new EditorReadyConverter(),
-        Bindings = { new Binding(nameof(ExerciseEditorViewModel.IsBusy)), new Binding(nameof(ExerciseEditorViewModel.NeedsLoad)) }
+        Bindings = { new Binding(nameof(ExerciseEditorViewModel.IsBusy)), new Binding(nameof(ExerciseEditorViewModel.NeedsLoad)), new Binding(nameof(ExerciseEditorViewModel.SavedExercise)) }
     };
 
     private async Task SaveAsync()
     {
+        if (committing) return;
+        committing = true;
         try { if (await viewModel.SaveAsync()) await Navigation.PopAsync(); } catch (Exception) { }
+        finally { committing = false; }
     }
 
     private async Task ArchiveAsync()
     {
+        if (committing) return;
+        committing = true;
         try
         {
             if (viewModel.IsBusy || viewModel.IsArchived) return;
@@ -75,6 +83,7 @@ public sealed class ExerciseEditorPage : ContentPage
                 await Navigation.PopAsync();
         }
         catch (Exception) { }
+        finally { committing = false; }
     }
 }
 
@@ -92,8 +101,14 @@ internal sealed class EditorRetryConverter : IMultiValueConverter
 
 internal sealed class EditorReadyConverter : IMultiValueConverter
 {
-    public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture) => values.Length == 2 && values[0] is false && values[1] is false;
+    public object Convert(object[] values, Type targetType, object parameter, System.Globalization.CultureInfo culture) => values.Length is 2 or 3 && values[0] is false && values[1] is false && (values.Length == 2 || values[2] is null);
     public object[] ConvertBack(object value, Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture) => throw new NotSupportedException();
+}
+
+internal sealed class SavedExerciseConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture) => value is Exercise;
+    public object ConvertBack(object? value, Type targetType, object? parameter, System.Globalization.CultureInfo culture) => throw new NotSupportedException();
 }
 
 internal sealed class InverseBooleanConverter : IValueConverter
