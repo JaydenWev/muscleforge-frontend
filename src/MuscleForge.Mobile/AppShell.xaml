@@ -12,6 +12,7 @@
        FlyoutBehavior="Disabled">
   <TabBar>
     <ShellContent x:Name="WorkoutContent" Title="Workout" Icon="tab_workout.png" Route="workout" />
+    <ShellContent x:Name="ExercisesContent" Title="Exercises" Icon="tab_exercises.png" Route="exercises" />
     <ShellContent x:Name="TemplatesContent" Title="Templates" Icon="tab_templates.png" Route="templates" />
     <ShellContent x:Name="HistoryContent" Title="History" Icon="tab_history.png" Route="history" />
     <ShellContent x:Name="SettingsContent" Title="Settings" Icon="tab_settings.png" Route="settings" />

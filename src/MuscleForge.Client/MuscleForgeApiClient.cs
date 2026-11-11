@@ -23,12 +23,13 @@ public sealed class ApiException(HttpStatusCode statusCode, ApiError? problem, R
 
 public sealed class MuscleForgeApiClient(HttpClient httpClient)
 {
-    private async Task<T> Invoke<T>(Uri baseUrl, string? token, Func<RawApiClient, Task<T>> operation)
+    private async Task<T> Invoke<T>(Uri baseUrl, string? token, Func<RawApiClient, Task<T>> operation,
+        HttpStatusCode expectedStatus = HttpStatusCode.OK)
     {
         using var transport = new HttpClient(new SafeTransport(httpClient));
         var client = new RawApiClient(baseUrl.AbsoluteUri, transport) { BearerToken = token };
         try { return await operation(client).ConfigureAwait(false); }
-        catch (RawApiException error) when (error.StatusCode == 200) { throw new JsonException("The API returned an invalid response."); }
+        catch (RawApiException error) when (error.StatusCode == (int)expectedStatus) { throw new JsonException("The API returned an invalid response."); }
         catch (RawApiException error) { throw new ApiException((HttpStatusCode)error.StatusCode, null, null); }
     }
 
@@ -44,6 +45,22 @@ public sealed class MuscleForgeApiClient(HttpClient httpClient)
     public Task<ApiStatusResponse> GetApiStatusAsync(Uri baseUrl, CancellationToken cancellationToken = default) =>
         Invoke(baseUrl, null, c => c.GetApiStatusAsync(cancellationToken));
 
+    public Task<ExercisePageResponse> ListExercisesAsync(Uri baseUrl, string bearerToken, string? search,
+        bool includeArchived, int offset, int limit, CancellationToken cancellationToken = default) =>
+        Invoke(baseUrl, bearerToken, c => c.ListExercisesAsync(search, includeArchived, offset, limit, cancellationToken));
+
+    public Task<ExerciseResponse> GetExerciseAsync(Uri baseUrl, string bearerToken, Guid id,
+        CancellationToken cancellationToken = default) =>
+        Invoke(baseUrl, bearerToken, c => c.GetExerciseAsync(id, cancellationToken));
+
+    public Task<ExerciseResponse> CreateExerciseAsync(Uri baseUrl, string bearerToken, CreateExerciseRequest body,
+        CancellationToken cancellationToken = default) =>
+        Invoke(baseUrl, bearerToken, c => c.CreateExerciseAsync(body, cancellationToken), HttpStatusCode.Created);
+
+    public Task<ExerciseResponse> UpdateExerciseAsync(Uri baseUrl, string bearerToken, Guid id, UpdateExerciseRequest body,
+        CancellationToken cancellationToken = default) =>
+        Invoke(baseUrl, bearerToken, c => c.UpdateExerciseAsync(id, body, cancellationToken));
+
     private sealed class SafeTransport(HttpClient inner) : HttpMessageHandler
     {
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -51,7 +68,7 @@ public sealed class MuscleForgeApiClient(HttpClient httpClient)
             using var forwarded = new HttpRequestMessage(request.Method, request.RequestUri) { Content = request.Content, Version = request.Version, VersionPolicy = request.VersionPolicy };
             foreach (var header in request.Headers) forwarded.Headers.TryAddWithoutValidation(header.Key, header.Value);
             var response = await inner.SendAsync(forwarded, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-            if (response.StatusCode == HttpStatusCode.OK) return response;
+            if (response.IsSuccessStatusCode) return response;
             using (response)
             {
                 ApiError? problem = null;

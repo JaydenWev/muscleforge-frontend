@@ -4,9 +4,11 @@ Native .NET MAUI Android app for MuscleForge, a personal workout tracker. Compan
 
 ## Current increment
 
-The app starts with native sign-in, restores a saved session, and opens Workout, Templates, History, and Settings tabs after resolving the account from the API. Settings shows the account and offers sign-out. Server configuration remains available before sign-in. The app uses a forest-and-lime palette, Manrope typography, and persistent dark, light, or system appearance. Workout logging and template editing are still planned.
+The app starts with native sign-in, restores a saved session, and opens Workout, Exercises, Templates, History, and Settings tabs after resolving the account from the API. Exercises supports search, paging, custom creation, editing and permanent archiving, with equipment and load guidance. Settings shows the account and offers sign-out. Server configuration remains available before sign-in. The app uses a forest-and-lime palette, Manrope typography, and persistent dark, light, or system appearance. Workout logging and template editing are still planned.
 
 Access tokens stay in memory; refresh credentials use Android SecureStorage. The portable session service coordinates refresh and verifies server/account identity. See [native authentication and its verification limits](docs/native-auth.md), the [architecture baseline](docs/architecture.md), and the [foundation decision](docs/decisions/0001-initial-foundation.md). SQLite drafts and synchronization are future increments.
+
+See [the exercise catalog workflow and acceptance record](docs/exercise-catalog.md). This app revision requires the MF-12 backend exercise endpoints and its explicitly applied catalog migration; `/api/v1/status` success alone does not prove those endpoints are deployed.
 
 ## Requirements
 
@@ -75,7 +77,7 @@ scripts/generate-api-client.sh --check
 
 NSwag.ConsoleCore 14.7.1 is pinned in the local .NET tool manifest. `nswag.json` and `nswag-fixture.json` generate the C# client/DTOs and test fixture; the shell wrapper checks the contract hash and generated-file drift. A small application facade handles per-request bearer headers and safe errors. Never hand-edit generated files. See [the contract workflow](docs/api-contract.md).
 
-Update the snapshot deliberately from a specific backend commit, update its provenance/hash, regenerate, and review the diff. CI publishes the exact pinned contract and generated client under the frontend revision. MF-14 consumes this contract without changing the snapshot or generator.
+Update the snapshot deliberately from a specific backend commit, update its provenance/hash, regenerate, and review the diff. CI publishes the exact pinned contract and generated client under the frontend revision. MF-15 pins the MF-12 exercise contract and regenerates with the existing NSwag tool; authentication operations remain compatible.
 
 ## Checks and remaining setup
 
