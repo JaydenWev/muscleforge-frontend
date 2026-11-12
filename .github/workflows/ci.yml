@@ -69,9 +69,15 @@ jobs:
       - run: dotnet workload install maui-android
       - run: dotnet restore src/MuscleForge.Mobile/MuscleForge.Mobile.csproj
       - name: Build Android debug APK
-        run: dotnet build src/MuscleForge.Mobile/MuscleForge.Mobile.csproj -c Debug --no-restore
+        run: dotnet build src/MuscleForge.Mobile/MuscleForge.Mobile.csproj -c Debug --no-restore -warnaserror
       - name: Verify standalone APK payload
         run: python3 scripts/check-apk-payload.py src/MuscleForge.Mobile/bin/Debug/net10.0-android36.0/local.muscleforge.app-Signed.apk
+      - name: Verify debug APK network policy
+        run: scripts/check-android-network-policy.sh src/MuscleForge.Mobile/bin/Debug/net10.0-android36.0/local.muscleforge.app-Signed.apk Debug
+      - name: Build Android release APK
+        run: dotnet build src/MuscleForge.Mobile/MuscleForge.Mobile.csproj -c Release --no-restore -warnaserror
+      - name: Verify release APK network policy
+        run: scripts/check-android-network-policy.sh src/MuscleForge.Mobile/bin/Release/net10.0-android36.0/local.muscleforge.app-Signed.apk Release
       - uses: actions/upload-artifact@v4
         with:
           name: muscleforge-android-debug
