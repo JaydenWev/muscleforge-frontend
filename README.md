@@ -64,6 +64,17 @@ An Android emulator reaches the host through `10.0.2.2`; a phone needs a reachab
 
 Only HTTPS is accepted. Debug builds trust a user-installed development CA alongside system CAs. Release builds trust system CAs only. Configure a trusted certificate and device trust; certificate and hostname validation stay enabled.
 
+Follow the [HTTPS development guide](docs/https-development.md) for certificate issuance, SDK/Docker/Visual Studio endpoints, phone/emulator trust, and wireless installation. The Android API client explicitly uses the native Android HTTP handler so the packaged network security configuration governs trust. Cookies and automatic redirects are disabled; configure the final HTTPS API address. See the [verification record](docs/https-verification.md) for actual checks and pending device acceptance.
+
+After building, check each APK's compiled manifest and trust configuration with the Android SDK's `aapt2`:
+
+```bash
+scripts/check-android-network-policy.sh src/MuscleForge.Mobile/bin/Debug/net10.0-android36.0/local.muscleforge.app-Signed.apk Debug
+scripts/check-android-network-policy.sh src/MuscleForge.Mobile/bin/Release/net10.0-android36.0/local.muscleforge.app-Signed.apk Release
+```
+
+Build the Release APK with `dotnet build src/MuscleForge.Mobile/MuscleForge.Mobile.csproj -c Release` before its check. The guard uses build-tools 36.0.0 under `ANDROID_HOME`, or an explicit `AAPT2` executable. Packaging checks do not establish runtime TLS behavior.
+
 The API URL and appearance choice use Preferences. Credentials use SecureStorage; passwords are cleared from the sign-in view model after each attempt. Android backup is disabled. Sign out before changing the server URL. Sign-out removes local credentials; it does not revoke tokens on the server. No public registration is available: sign in with the account provisioned by the backend's owner environment settings.
 
 ## Contract and generated client
