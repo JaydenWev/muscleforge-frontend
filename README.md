@@ -60,11 +60,11 @@ Debug builds use a development signing identity. Release signing, key backups, u
 
 In Settings, enter the HTTPS server root (or proxy prefix), without `/api/v1`, credentials, query parameters, or fragments. Select **Save & connect**. Success confirms API reachability/version; it does not certify database or workout availability. A saved address starts as **Not checked** on a fresh launch; editing it clears the previous success state. Keep Tailscale connected on your phone when using a Tailscale server address.
 
-An Android emulator reaches the host through `10.0.2.2`; a phone needs a reachable LAN/VPN hostname. `localhost` refers to the device itself. The server certificate must include the hostname/IP used. A localhost-only certificate will not validate for the emulator alias.
+Development and native acceptance use physical Android phones. A phone needs a reachable LAN/VPN hostname or IP; `localhost` refers to the phone itself. The server certificate must include the exact hostname/IP used. Emulator setup and verification are outside the project's scope.
 
 Only HTTPS is accepted. Debug builds trust a user-installed development CA alongside system CAs. Release builds trust system CAs only. Configure a trusted certificate and device trust; certificate and hostname validation stay enabled.
 
-Follow the [HTTPS development guide](docs/https-development.md) for certificate issuance, SDK/Docker/Visual Studio endpoints, phone/emulator trust, and wireless installation. The Android API client explicitly uses the native Android HTTP handler so the packaged network security configuration governs trust. Cookies and automatic redirects are disabled; configure the final HTTPS API address. See the [verification record](docs/https-verification.md) for actual checks and pending device acceptance.
+Follow the [HTTPS development guide](docs/https-development.md) for certificate issuance, SDK/Docker/Visual Studio endpoints, phone trust, and wireless installation. The Android API client explicitly uses the native Android HTTP handler so the packaged network security configuration governs trust. Cookies and automatic redirects are disabled; configure the final HTTPS API address. See the [verification record](docs/https-verification.md) for actual checks and remaining manual observations.
 
 After building, check each APK's compiled manifest and trust configuration with the Android SDK's `aapt2`:
 

@@ -4,6 +4,8 @@ Date: 2026-11-01
 Status: Revised baseline — two repositories, native .NET MAUI Android app  
 Audience: The developer and an AI coding agent
 
+Owner decision, 2026-11-13: development and native acceptance use physical Android phones. Emulator work is excluded from scope. Apply the current feature development guidelines when interpreting older verification references in this baseline.
+
 ## 1. Product goal and requirements
 
 The product name and Android display name are **MuscleForge**. Use `MuscleForge` for .NET project/namespace prefixes and `muscleforge` for repository/artifact naming. Choose a stable Android application ID before the first signed release; do not invent a domain ownership claim.

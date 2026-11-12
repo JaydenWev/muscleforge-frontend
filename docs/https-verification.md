@@ -1,6 +1,6 @@
 # MF-17 transport verification
 
-Record date: 2026-11-12. MF-17 remains in progress until its emulator and phone acceptance checks have actual results. See the [setup guide](https-development.md) and [native checklist](../tests/MuscleForge.Mobile.UiTests/README.md).
+Record date: 2026-11-12. Scope updated 2026-11-13: the owner chose physical-phone development and acceptance and excluded emulator work. MF-17's phone transport criteria have passing evidence below; the implementation is ready for review. See the [setup guide](https-development.md) and [native checklist](../tests/MuscleForge.Mobile.UiTests/README.md).
 
 ## Build and host checks
 
@@ -13,7 +13,7 @@ The Android transport change is commit `a56dc18d9f9e3c69d3108657ca66b7729f3f9072
 - A copy of the Release APK was signed with the existing development identity for an update over the installed Debug app, SHA-256 `c58afdb3c84807ed75cdb80a335478fcc038cab5223694fe720d7525fcf35d1e`. Its Release policy guard passed and its public signing-certificate digest matches Debug. This is a test artifact, not the final release identity/signing work in MF-32.
 - Standalone managed payload checks passed for both Debug and Release, for `arm64-v8a` and `x86_64`.
 - Portable regression suite: 78 passed, zero failed/skipped, using the existing Release test assembly. This is not an Android handler test.
-- OpenSSL: the temporary leaf verifies against its private CA for the configured hostname and emulator IP SAN. Verification rejects an unrelated hostname and the chain without that CA.
+- OpenSSL: the temporary leaf verifies against its private CA for the configured hostname and an additional IP SAN. Verification rejects an unrelated hostname and the chain without that CA.
 - A temporary MF-12 API container serving HTTPS status returned `{"service":"MuscleForge","apiVersion":"v1"}` to curl with the issuing CA. Curl rejected both an untrusted issuer and a hostname mismatch (exit 60). No validation bypass was used.
 - The documented Compose override passed `docker compose config --quiet` with synthetic configuration. That override was not deployed.
 
@@ -42,6 +42,6 @@ The owner confirmed installation of the new development CA through Android Setti
 
 After Release verification, the original Debug APK was restored over the same installation. Its debuggable flag was confirmed, and a cold launch followed by Save & connect succeeded again. The app was left on the working development address. Temporary hostname-mismatch and redirect test containers were removed; the separate status-only HTTPS development endpoint remains available for follow-up checks.
 
-## Emulator observations
+## Acceptance scope
 
-Pending. This workspace has no emulator executable or exposed KVM device; the owner confirmed that no emulator is available now. Physical-phone and host results do not substitute for emulator Settings/TLS checks. Use a separate emulator-capable host and the guide's `10.0.2.2` SAN/listener route, recording its exact image/API, APK hash, backend endpoint and each observed result. The alias targets the computer running that emulator; an API on another machine needs a reachable LAN/VPN address or an explicitly configured tunnel.
+The owner excluded emulator setup, execution and verification from project scope on 2026-11-13. No emulator task or acceptance gate remains. The recorded phone checks establish MF-17's trusted success, untrusted certificate, hostname mismatch, HTTP/redirect rejection and restrictive Release trust criteria. Additional unrun observations in the phone table remain explicitly unrun; broader native accessibility checks belong to the physical-device smoke checklist.
