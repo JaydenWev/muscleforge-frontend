@@ -25,7 +25,13 @@ public static class MauiProgram
                 fonts.AddFont("Manrope-ExtraBold.ttf", "ManropeExtraBold");
             });
         builder.Services.AddSingleton<AppAppearance>();
-        builder.Services.AddHttpClient<MuscleForgeApiClient>(client => client.Timeout = TimeSpan.FromSeconds(15));
+        builder.Services.AddHttpClient<MuscleForgeApiClient>(client => client.Timeout = TimeSpan.FromSeconds(15))
+            // Use Android's trust policy, including debug-only user CAs, for every API call.
+            .ConfigurePrimaryHttpMessageHandler(() => new Xamarin.Android.Net.AndroidMessageHandler
+            {
+                UseCookies = false,
+                AllowAutoRedirect = false
+            });
         builder.Services.AddSingleton<IConnectionSettings, ConnectionSettings>();
         builder.Services.AddTransient<IApiStatusService, ApiStatusService>();
         builder.Services.AddSingleton<ConnectionViewModel>();

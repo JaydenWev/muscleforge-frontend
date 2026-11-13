@@ -2,7 +2,7 @@
 
 Appium automation will be added with the first authenticated workout flow. No automated device test is claimed by this scaffold.
 
-For this increment, install the debug APK and check on an Android device or emulator:
+Install the debug APK and check on the owner's physical Android phone:
 
 1. With no saved sign-in, the app launches with native sign-in. Open **Server settings** to configure the API. After signing in, the five Shell tabs appear: Workout, Exercises, Templates, History and Settings.
 2. Workout, Templates, and History show their planned state without editable workout data.
@@ -15,6 +15,20 @@ For this increment, install the debug APK and check on an Android device or emul
 9. Scroll every page with a larger Android font size and in landscape; the server field and action remain reachable.
 
 Stable automation IDs: `ApiBaseUrlEntry`, `CheckApiConnectionButton`, `ApiConnectionStatus`, `AppearanceDark`, `AppearanceLight`, `AppearanceSystem`.
+
+## MF-17 HTTPS transport
+
+Use the [HTTPS development guide](../../docs/https-development.md) and record results in the [transport verification record](../../docs/https-verification.md). Run the following on the owner's physical Android phone. Record the exact APK/hash/configuration, Android device/OS, backend revision/image, endpoint, certificate SAN/issuer, installed CA state and observed result. Use a dedicated development endpoint and synthetic accounts. Do not include private keys, passwords, tokens or full device logs.
+
+1. Before installing the development CA, enter the matching HTTPS endpoint in Server settings and select **Save & connect**. It must fail without an override or a success badge.
+2. Install only the public CA certificate through Android Settings. With the Debug APK and matching hostname/IP SAN, retry successfully. Restart: the address must persist, but connection must return to **Not checked** until checked again.
+3. Use a reachable alias/IP for the same listener that is absent from its SANs. The trusted chain must still fail hostname validation. Return to the matching address and recover successfully.
+4. Enter an `http://` address. Validation must reject it. On a controlled HTTPS server that redirects status requests to HTTP, verify no downgrade is followed and Settings shows failure. No cookie or credential is required for the status check.
+5. Remove the CA, restart the app to avoid a reused TLS connection, and confirm failure again. Reinstall only if further Debug testing requires it.
+6. Install the Release APK and repeat the private-CA case with the user CA installed. It must fail. A system-trusted, matching HTTPS endpoint should succeed in Release when available. Preserve the application ID/signing identity; do not uninstall or clear a populated installation just to switch configurations.
+7. Confirm the keyboard leaves **Save & connect** reachable and TalkBack identifies the URL, action and safe error. Record the actual phone results; a browser/curl or packaged XML check does not prove the native app's transport behavior.
+
+Remove the temporary CA and stop only the temporary endpoint after testing. Do not alter existing service routes or use a certificate-validation bypass.
 
 ## MF-14 authenticated flow — pending device evidence
 

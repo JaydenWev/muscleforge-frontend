@@ -20,7 +20,7 @@ This feature consumes `contracts/source.json` unchanged: backend revision `24567
 
 The backend uses opaque Identity access/refresh tokens (15 minutes/14 days). Refresh credentials may be reused until expiry or security-stamp invalidation. Local logout is credential removal, without a server revocation endpoint or per-device revocation promise. A different API must not be assumed to have the same refresh semantics.
 
-There are no workout drafts yet. MF-25, MF-28 and MF-39 must add account-scoped persistence and the pending-data logout/account-change guard before local edits exist. MF-37 extends authentication recovery during replay. Do not infer offline replay or draft safety from these tests. MF-17 covers trusted HTTPS setup on the emulator/phone.
+There are no workout drafts yet. MF-25, MF-28 and MF-39 must add account-scoped persistence and the pending-data logout/account-change guard before local edits exist. MF-37 extends authentication recovery during replay. Do not infer offline replay or draft safety from these tests. MF-17 covers trusted HTTPS setup on the owner's physical Android phone.
 
 ## Verification record — 2026-11-10
 
