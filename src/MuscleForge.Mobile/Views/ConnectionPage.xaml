@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:MuscleForge.Mobile.Core.ViewModels;assembly=MuscleForge.Mobile.Core"
              xmlns:ui="clr-namespace:MuscleForge.Mobile.Controls"
+             xmlns:preferences="clr-namespace:MuscleForge.Mobile.Core.Preferences;assembly=MuscleForge.Mobile.Core"
              x:Class="MuscleForge.Mobile.Views.ConnectionPage"
              x:DataType="vm:ConnectionViewModel"
              Title="Settings">
@@ -21,6 +22,21 @@
           <Label Text="{Binding AccountEmail}" Style="{StaticResource BodyText}" />
           <Label Text="{Binding Message}" Style="{StaticResource SmallText}" />
           <Button Text="Sign out" Command="{Binding SignOutCommand}" IsEnabled="{Binding CanEdit}" AutomationId="SignOutButton" />
+        </VerticalStackLayout>
+      </Border>
+      <Border x:Name="PreferencesPanel" Style="{StaticResource Card}" IsVisible="False" x:DataType="preferences:AccountPreferencesViewModel">
+        <VerticalStackLayout Spacing="12">
+          <Label Text="Training preferences" Style="{StaticResource SectionTitle}" />
+          <Label Text="Weight unit" Style="{StaticResource SmallText}" />
+          <Picker x:Name="WeightUnitPicker" SelectedItem="{Binding Unit}" IsEnabled="{Binding CanEdit}" AutomationId="PreferenceWeightUnit" />
+          <Label Text="Time zone" Style="{StaticResource SmallText}" />
+          <Entry Text="{Binding TimeZoneId}" Placeholder="Europe/Amsterdam" IsEnabled="{Binding CanEdit}" AutomationId="PreferenceTimeZone"
+                 IsSpellCheckEnabled="False" IsTextPredictionEnabled="False" />
+          <Button Text="Use phone time zone" Command="{Binding UsePhoneTimeZoneCommand}" IsEnabled="{Binding CanEdit}" AutomationId="UsePhoneTimeZone" />
+          <Button Text="Save preferences" Command="{Binding SaveCommand}" IsEnabled="{Binding CanEdit}" AutomationId="SavePreferences" />
+          <Button Text="Reload preferences" Command="{Binding ReloadCommand}" AutomationId="ReloadPreferences" />
+          <Label Text="{Binding Message}" Style="{StaticResource SmallText}" AutomationId="PreferencesStatus" />
+          <ActivityIndicator IsRunning="{Binding Busy}" IsVisible="{Binding Busy}" />
         </VerticalStackLayout>
       </Border>
       <Label x:Name="ServerLockedMessage" Text="Sign out to change your server address." Style="{StaticResource SmallText}" IsVisible="False" />
