@@ -13,6 +13,16 @@ public partial class App : Application
         services.GetRequiredService<AppAppearance>().Initialize(this);
     }
 
-    protected override Window CreateWindow(IActivationState? activationState) =>
-        services.GetRequiredService<SessionNavigator>().CreateWindow();
+    protected override Window CreateWindow(IActivationState? activationState)
+    {
+        var navigator = services.GetRequiredService<SessionNavigator>();
+#if DEBUG && ANDROID
+        if (MainActivity.StartWithWeightVerification) navigator.OpenWeightVerification();
+#endif
+        return navigator.CreateWindow();
+    }
+
+#if DEBUG && ANDROID
+    internal void OpenWeightVerification() => services.GetRequiredService<SessionNavigator>().OpenWeightVerification();
+#endif
 }
