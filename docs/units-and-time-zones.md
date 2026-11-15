@@ -21,4 +21,6 @@ Local Android Debug and normal-trimming/AOT Release builds from frontend `6517e9
 
 Both copies have signing-certificate SHA-256 `f89ca854b548317aa4ab86c3b21714c0438644380285495ee5f55b2da3b79326`, matching the existing development installation. These are verification artifacts, not MF-32's final release identity.
 
-The Settings-to-API phone flow, actual Dutch/English numeric-keyboard checks, the debug intent's cold-start behavior, and JSON required-member behavior in the trimmed Android runtime remain unverified. Successful builds and portable tests do not establish those device results. Work resumed on 2026-11-15; ADB had no connected phone when this checkpoint was recorded.
+A live Linux .NET consumer of the actual generated client and preferences gateway passed against the isolated PostgreSQL-backed HTTPS API on 2026-11-15: sign in, read preferences, save and confirm lb with `Europe/Amsterdam`, restore and confirm the original preferences, and sign out. It used normal OS certificate validation. This establishes the portable HTTP path, not Android SecureStorage or trimming behavior.
+
+The Settings-to-API phone flow, actual Dutch/English numeric-keyboard checks, the debug intent's cold-start behavior, and JSON required-member behavior in the trimmed Android runtime remain unverified. Successful builds and portable tests do not establish those device results. Work resumed on 2026-11-15; the OnePlus subsequently reconnected over ADB, with native checks awaiting an unlocked screen.
