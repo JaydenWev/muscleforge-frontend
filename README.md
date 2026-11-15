@@ -94,6 +94,8 @@ Update the snapshot deliberately from a specific backend commit, update its prov
 
 CI checks client drift, runs portable tests, builds Android separately, verifies that managed code is packaged for every APK ABI, and publishes signed debug APKs and resolved lockfiles. Tests cover HTTP behavior, session restoration, coordinated refresh, storage/cancellation failures, and navigation decisions. [Device smoke checks](tests/MuscleForge.Mobile.UiTests/README.md) are manual until Appium coverage is added. Portable navigation tests do not establish actual Android back-stack or SecureStorage behavior.
 
+The [foundation verification record](docs/foundation-verification.md) describes the pinned API/PostgreSQL HTTP consumer and its physical-phone acceptance checks. Its [isolated server fixture](tests/foundation/README.md) consumes an explicitly supplied backend image; ordinary frontend builds require no backend checkout.
+
 The first restore generates `packages.lock.json` files; commit them from your restore or CI artifacts. Existing lockfiles are enforced during CI restore.
 
 The visual refresh has passed generated-client consistency, all 11 portable tests in Debug and Release, and full Debug and Release solution builds in the Linux ARM64 workspace. Earlier APK startup and Settings behavior were verified on a OnePlus 13 running Android 16; the refreshed UI still needs the [manual device smoke checks](tests/MuscleForge.Mobile.UiTests/README.md).
