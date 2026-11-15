@@ -13,6 +13,19 @@ public sealed class SessionNavigator
     private SignInViewModel? viewModel;
     private SessionPage currentPage = SessionPage.Loading;
     private CancellationTokenSource? restorationCancellation;
+#if DEBUG && ANDROID
+    private bool weightVerificationOpen;
+
+    public void OpenWeightVerification()
+    {
+        weightVerificationOpen = true;
+        if (window is null) return;
+        viewModel?.Dispose();
+        viewModel = null;
+        if (window.Page is AppShell previousShell) previousShell.Dispose();
+        window.Page = new NavigationPage(new DebugWeightEntryPage());
+    }
+#endif
 
     public SessionNavigator(IServiceProvider services, IAuthSession session)
     {
@@ -23,6 +36,13 @@ public sealed class SessionNavigator
 
     public Window CreateWindow()
     {
+#if DEBUG && ANDROID
+        if (weightVerificationOpen)
+        {
+            window = new Window(new NavigationPage(new DebugWeightEntryPage()));
+            return window;
+        }
+#endif
         restorationCancellation = new CancellationTokenSource();
         var loading = new ContentPage { Content = new VerticalStackLayout
         {
@@ -63,6 +83,9 @@ public sealed class SessionNavigator
     private void Show() => MainThread.BeginInvokeOnMainThread(() =>
     {
         if (window is null) return;
+#if DEBUG && ANDROID
+        if (weightVerificationOpen) return;
+#endif
         var next = SessionNavigation.Decide(session.State.Status, currentPage);
         if (currentPage == next) return;
         currentPage = next;

@@ -6,6 +6,7 @@ using MuscleForge.Mobile.Core.Catalog;
 using MuscleForge.Mobile.Views.Catalog;
 using MuscleForge.Mobile.Core.Authentication;
 using MuscleForge.Mobile.Core.Settings;
+using MuscleForge.Mobile.Core.Preferences;
 using MuscleForge.Mobile.Core.ViewModels;
 using MuscleForge.Mobile.Services;
 using MuscleForge.Mobile.Views;
@@ -39,6 +40,7 @@ public static class MauiProgram
         builder.Services.AddTransient<IAuthGateway, ApiAuthGateway>();
         builder.Services.AddSingleton<IAuthSession, AuthSession>();
         builder.Services.AddTransient<IExerciseCatalogGateway, ApiExerciseCatalogGateway>();
+        builder.Services.AddTransient<IAccountPreferencesGateway, ApiAccountPreferencesGateway>();
         builder.Services.AddTransient<ExerciseListViewModel>(services => new ExerciseListViewModel(services.GetRequiredService<IExerciseCatalogGateway>(), services.GetRequiredService<IAuthSession>(), MainThread.BeginInvokeOnMainThread));
         builder.Services.AddTransient<ExerciseNavigation>();
         builder.Services.AddSingleton<IExercisePicker, ExercisePicker>();

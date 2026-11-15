@@ -45,6 +45,12 @@ public sealed class MuscleForgeApiClient(HttpClient httpClient)
     public Task<ApiStatusResponse> GetApiStatusAsync(Uri baseUrl, CancellationToken cancellationToken = default) =>
         Invoke(baseUrl, null, c => c.GetApiStatusAsync(cancellationToken));
 
+    public Task<AccountPreferencesResponse> GetAccountPreferencesAsync(Uri baseUrl, string bearerToken, CancellationToken cancellationToken = default) =>
+        Invoke(baseUrl, bearerToken, c => c.GetAccountPreferencesAsync(cancellationToken));
+
+    public Task<AccountPreferencesResponse> UpdateAccountPreferencesAsync(Uri baseUrl, string bearerToken, UpdateAccountPreferencesRequest body, CancellationToken cancellationToken = default) =>
+        Invoke(baseUrl, bearerToken, c => c.UpdateAccountPreferencesAsync(body, cancellationToken));
+
     public Task<ExercisePageResponse> ListExercisesAsync(Uri baseUrl, string bearerToken, string? search,
         bool includeArchived, int offset, int limit, CancellationToken cancellationToken = default) =>
         Invoke(baseUrl, bearerToken, c => c.ListExercisesAsync(search, includeArchived, offset, limit, cancellationToken));
