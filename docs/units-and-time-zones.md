@@ -23,4 +23,10 @@ Both copies have signing-certificate SHA-256 `f89ca854b548317aa4ab86c3b21714c043
 
 A live Linux .NET consumer of the actual generated client and preferences gateway passed against the isolated PostgreSQL-backed HTTPS API on 2026-11-15: sign in, read preferences, save and confirm lb with `Europe/Amsterdam`, restore and confirm the original preferences, and sign out. It used normal OS certificate validation. This establishes the portable HTTP path, not Android SecureStorage or trimming behavior.
 
-The Settings-to-API phone flow, actual Dutch/English numeric-keyboard checks, the debug intent's cold-start behavior, and JSON required-member behavior in the trimmed Android runtime remain unverified. Successful builds and portable tests do not establish those device results. Work resumed on 2026-11-15; the OnePlus subsequently reconnected over ADB, with native checks awaiting an unlocked screen.
+## Physical-phone checkpoint — 2026-11-15
+
+On the OnePlus 13 (CPH2653, Android 16/API 36), the Debug development-signed APK above was installed as an update, preserving app data. It connected through the normal Android HTTP handler and installed development CA to the isolated PostgreSQL-backed API at `https://jadyn-server:7444/`, image `muscleforge-backend:mf18-units-timezones` from backend `5a0b1546bb09c476358306cf46f259fd2a517be2`.
+
+After native sign-in, Settings loaded kg and `Etc/UTC`. Selecting lb and **Use phone time zone** filled `Europe/Amsterdam`; saving and reloading returned both values. Force-stop, relaunch and reopening Settings retained lb and `Europe/Amsterdam`. Saving `Invalid/Zone` showed the save-error message while retaining the entered value. Selecting the phone time zone and saving again recovered with **Preferences saved.** These are actual native/generated-client/API/PostgreSQL results.
+
+The weight verification page opened through a warm explicit intent, but a cold-start intent was overwritten by authentication navigation. A debug-only fix is in progress. Actual Dutch/English numeric-keyboard checks and JSON required-member behavior in the trimmed Android runtime remain unverified; builds and portable tests do not establish those results.
