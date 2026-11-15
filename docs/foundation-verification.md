@@ -14,6 +14,8 @@ The real-API project references only frontend projects. Against a fresh, migrate
 dotnet tests/MuscleForge.RealApiTests/bin/Release/net10.0/MuscleForge.RealApiTests.dll -trx /tmp/mf16-real-api.trx
 ```
 
-The test signs in, restores and refreshes a session, creates/searches/archives an exercise and signs out. It mutates that account and requires normal certificate validation; use synthetic data only. Setup and migration are independent backend operations, not build dependencies. The in-memory credential store tests portable orchestration, not Android SecureStorage.
+The test signs in, restores and refreshes a session, creates/edits/searches/archives an exercise and signs out. It mutates that account and requires normal certificate validation; use synthetic data only. Setup and migration are independent backend operations, not build dependencies. The in-memory credential store tests portable orchestration, not Android SecureStorage.
+
+On 2026-11-15, [hosted frontend CI run 43729568715](https://github.com/JaydenWev/muscleforge-frontend/actions/runs/43729568715) passed the core and Android Debug/Release jobs. The pinned backend's complete local PostgreSQL integration run passed all 117 tests with zero failures/skips and a captured exit code of 0; its [hosted backend CI run](https://github.com/JaydenWev/muscleforge-backend/actions/runs/43729569269) also passed. These results supersede the earlier incomplete backend-suite checkpoint without claiming native acceptance.
 
 Native phone checks remain pending: trusted HTTPS connection, sign-in and restoration, seeded catalog search/create/edit/archive, sign-out, restart and Android navigation/storage behavior. The portable run does not establish these device behaviors.
