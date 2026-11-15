@@ -10,6 +10,15 @@ Debug builds include an explicit-intent-only page containing the reusable weight
 
 ## Verification checkpoint
 
-The portable Release build passed with zero warnings/errors and all 114 in-process tests passed. Coverage includes shared semantic fixtures, account/server scope, refresh and cancellation, preference failures, and rejection of omitted required response fields. The contract is pinned in `contracts/source.json`, and the copied semantic examples have independent commit/hash provenance in `contracts/units-timezones-source.json`.
+The portable Release build and all 114 tests passed. Coverage includes shared semantic fixtures, account/server scope, refresh and cancellation, preference failures, and rejection of omitted required response fields. The contract is pinned in `contracts/source.json`, and the copied semantic examples have independent commit/hash provenance in `contracts/units-timezones-source.json`. [Hosted CI run 43729569064](https://github.com/JaydenWev/muscleforge-frontend/actions/runs/43729569064) passed the core and Android Debug/Release jobs on 2026-11-15.
 
-Android Debug/Release builds, trimming diagnostics for the JSON required-member modifier, APK checks, the Settings-to-API phone flow and physical Dutch/English keyboard checks remain pending. The explicit debug intent and its cold-start behavior are unverified. Work was stopped at the owner's request on 2026-11-13; no further checks were started after that request.
+Local Android Debug and normal-trimming/AOT Release builds from frontend `6517e96055027841f024fcd38ed08d029c879b6d` also passed on 2026-11-15 with zero warnings/errors. Both configurations passed the standalone managed-payload and packaged network-policy checks for arm64-v8a and x86_64. Copies signed with the existing development identity are retained under the ignored `artifacts/mf18/` directory:
+
+| Configuration | APK SHA-256 |
+| --- | --- |
+| Debug development-signed copy | `229f06b86eec98e9da75d18defd3a636da6be2ba223c84a99af088ee3309e263` |
+| Release development-signed copy | `3498620bc61bd970986208cecb81a9ed94c8b9bbbd9ce8724023125a8662e459` |
+
+Both copies have signing-certificate SHA-256 `f89ca854b548317aa4ab86c3b21714c0438644380285495ee5f55b2da3b79326`, matching the existing development installation. These are verification artifacts, not MF-32's final release identity.
+
+The Settings-to-API phone flow, actual Dutch/English numeric-keyboard checks, the debug intent's cold-start behavior, and JSON required-member behavior in the trimmed Android runtime remain unverified. Successful builds and portable tests do not establish those device results. Work resumed on 2026-11-15; ADB had no connected phone when this checkpoint was recorded.
