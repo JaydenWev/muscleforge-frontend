@@ -19,13 +19,13 @@ public sealed class ExerciseCatalogPage : ContentPage, IDisposable
         var search = new Entry { Placeholder = "Search name or equipment", ReturnType = ReturnType.Search, AutomationId = "ExerciseSearch" };
         search.SetBinding(Entry.TextProperty, nameof(viewModel.SearchText));
         search.Completed += (_, _) => viewModel.SearchCommand.Execute(null);
-        var searchButton = new Button { Text = "Search", Command = viewModel.SearchCommand, AutomationId = "ExerciseSearchButton" };
+        var searchButton = new Button { Text = "Search", Command = viewModel.SearchCommand, AutomationId = "ExerciseSearchButton", Style = ForgeUi.Style("SecondaryButton"), MinimumHeightRequest = 48, Padding = new Thickness(14, 8) };
         SemanticProperties.SetDescription(search, "Search exercises by name or equipment");
         var archived = new Switch { AutomationId = "ExerciseShowArchived", MinimumHeightRequest = 48, MinimumWidthRequest = 48 };
         SemanticProperties.SetDescription(archived, "Show archived exercises");
         archived.SetBinding(Switch.IsToggledProperty, nameof(viewModel.IncludeArchived));
         archived.Toggled += (_, _) => { if (IsLoaded) viewModel.SearchCommand.Execute(null); };
-        var filter = new HorizontalStackLayout { Spacing = 12, Children = { archived, ForgeUi.Text("Show archived") } };
+        var filter = new HorizontalStackLayout { Spacing = 8, Children = { archived, ForgeUi.Text("Show archived", "SmallText") } };
         var indicator = new ActivityIndicator();
         indicator.SetBinding(ActivityIndicator.IsRunningProperty, nameof(viewModel.IsBusy));
         indicator.SetBinding(IsVisibleProperty, nameof(viewModel.IsBusy));
@@ -40,10 +40,22 @@ public sealed class ExerciseCatalogPage : ContentPage, IDisposable
         var items = new CollectionView { ItemsSource = viewModel.Items, ItemTemplate = new DataTemplate(() => ExerciseRow(exercise => OpenEditorAsync(exercise), new Binding(nameof(viewModel.IsBusy), source: viewModel, converter: new InverseBooleanConverter()))), SelectionMode = SelectionMode.None };
         var more = new Button { Text = "Load more", Style = ForgeUi.Style("SecondaryButton"), Command = viewModel.LoadMoreCommand };
         more.SetBinding(IsVisibleProperty, nameof(viewModel.HasMore));
-        var add = ForgeUi.Button("Add exercise", () => OpenEditorAsync(null));
+        var add = ForgeUi.Button("+ Add", () => OpenEditorAsync(null));
+        add.MinimumHeightRequest = 44;
+        add.Padding = new Thickness(16, 8);
         add.SetBinding(IsEnabledProperty, new Binding(nameof(viewModel.IsBusy), converter: new InverseBooleanConverter()));
         add.AutomationId = "ExerciseAdd";
-        items.Header = new VerticalStackLayout { Padding = new Thickness(24, 20, 24, 12), Spacing = 12, Children = { ForgeUi.Header("YOUR LIBRARY", "Exercises", "Build and manage your exercise catalog."), add, search, searchButton, filter, indicator, cancel, error, retry, empty } };
+        var heading = ForgeUi.Text("Exercises", "DisplayTitle");
+        SemanticProperties.SetHeadingLevel(heading, SemanticHeadingLevel.Level1);
+        var titleBar = new Grid { ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) }, ColumnSpacing = 12 };
+        titleBar.Add(heading);
+        titleBar.Add(add, 1);
+        var searchBar = new Grid { ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) }, ColumnSpacing = 8 };
+        searchBar.Add(search);
+        searchBar.Add(searchButton, 1);
+        var searchFrame = new Border { StrokeThickness = 0, StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 16 }, Padding = new Thickness(12, 2), Content = searchBar };
+        searchFrame.SetDynamicResource(BackgroundColorProperty, "SurfaceRaised");
+        items.Header = new VerticalStackLayout { Padding = new Thickness(24, 20, 24, 12), Spacing = 14, Children = { titleBar, searchFrame, filter, indicator, cancel, error, retry, empty } };
         items.Footer = new VerticalStackLayout { Padding = new Thickness(24, 12, 24, 32), Children = { more } };
         items.Margin = 0;
         Content = new Grid { RowDefinitions = { new RowDefinition(GridLength.Star) }, Children = { items } };
@@ -74,23 +86,32 @@ public sealed class ExerciseCatalogPage : ContentPage, IDisposable
     internal static View ExerciseRow(Func<Exercise, Task> activate, BindingBase enabledBinding)
     {
         var name = ForgeUi.Text("", "SectionTitle");
+        name.FontSize = 15;
+        name.LineBreakMode = LineBreakMode.TailTruncation;
         name.SetBinding(Label.TextProperty, nameof(Exercise.Name));
         var equipment = ForgeUi.Text("", "SmallText");
         equipment.SetBinding(Label.TextProperty, nameof(Exercise.Equipment));
-        var guidance = ForgeUi.Text("", "SmallText");
-        guidance.SetBinding(Label.TextProperty, nameof(Exercise.LoadGuidance));
-        var status = ForgeUi.Text("", "Eyebrow");
-        status.SetBinding(Label.TextProperty, new Binding(nameof(Exercise.IsArchived), converter: new ArchiveStatusConverter()));
-        var button = new Button { Text = "Open", Style = ForgeUi.Style("SecondaryButton"), MinimumHeightRequest = 48 };
+        var status = ForgeUi.Text("ARCHIVED", "Eyebrow");
+        status.SetBinding(IsVisibleProperty, nameof(Exercise.IsArchived));
+        var button = new Button { Text = "", BackgroundColor = Colors.Transparent, BorderWidth = 0, CornerRadius = 0, MinimumHeightRequest = 64, Padding = 0 };
+        button.SetBinding(SemanticProperties.DescriptionProperty, nameof(Exercise.Name));
         button.SetBinding(IsEnabledProperty, enabledBinding);
         button.Clicked += async (sender, _) =>
         {
             if (((Button)sender!).BindingContext is Exercise item)
                 try { await activate(item); } catch (Exception) { }
         };
-        var card = ForgeUi.Card(new VerticalStackLayout { Spacing = 8, Children = { name, equipment, guidance, status, button } });
-        card.Margin = new Thickness(24, 5);
-        return card;
+        var icon = ForgeUi.IconTile(ForgeIcon.Dumbbell, 44);
+        var details = new VerticalStackLayout { Spacing = 3, VerticalOptions = LayoutOptions.Center, Children = { name, equipment, status } };
+        var arrow = ForgeUi.Icon(ForgeIcon.ArrowRight, 18, "TextMuted");
+        arrow.VerticalOptions = LayoutOptions.Center;
+        var row = new Grid { Padding = new Thickness(24, 10), MinimumHeightRequest = 68, ColumnSpacing = 14, ColumnDefinitions = { new ColumnDefinition(GridLength.Auto), new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) } };
+        row.Add(icon, 0);
+        row.Add(details, 1);
+        row.Add(arrow, 2);
+        row.Add(button);
+        Grid.SetColumnSpan(button, 3);
+        return row;
     }
 }
 
