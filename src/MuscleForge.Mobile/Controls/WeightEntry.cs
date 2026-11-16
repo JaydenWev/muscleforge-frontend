@@ -10,7 +10,7 @@ public sealed class WeightEntry : ContentView
 
     public WeightEntry()
     {
-        entry = new Entry { Keyboard = Keyboard.Numeric, AutomationId = "WeightEntry", Placeholder = "0" };
+        entry = new NumericWeightInput { Keyboard = Keyboard.Numeric, AutomationId = "WeightEntry", Placeholder = "0" };
         SemanticProperties.SetDescription(entry, "Weight");
         entry.TextChanged += (_, _) => TextChanged?.Invoke(this, EventArgs.Empty);
         Content = entry;
@@ -21,3 +21,6 @@ public sealed class WeightEntry : ContentView
     public WeightUnit Unit { get; set; }
     public bool TryGetValue(out decimal value) => Weight.TryParse(Text, CultureInfo.CurrentCulture, Unit, out value);
 }
+
+// Identifies this entry for the Android keyboard mapping without affecting other numeric inputs.
+internal sealed class NumericWeightInput : Entry;
