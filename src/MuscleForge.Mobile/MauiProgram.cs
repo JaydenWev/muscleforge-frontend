@@ -10,6 +10,7 @@ using MuscleForge.Mobile.Core.Preferences;
 using MuscleForge.Mobile.Core.ViewModels;
 using MuscleForge.Mobile.Services;
 using MuscleForge.Mobile.Views;
+using MuscleForge.Mobile.Controls;
 
 namespace MuscleForge.Mobile;
 
@@ -49,6 +50,17 @@ public static class MauiProgram
         builder.Services.AddTransient<ConnectionPage>();
         builder.Services.AddTransient<AppShell>();
 #if ANDROID
+        Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping(nameof(IEntry.Keyboard), (handler, view) =>
+            {
+                if (view is NumericWeightInput)
+                {
+                    // Preserve input, including pasted text, for culture-specific validation.
+                    handler.PlatformView.KeyListener = Android.Text.Method.TextKeyListener.GetInstance(
+                        false, Android.Text.Method.TextKeyListener.Capitalize.None);
+                    handler.PlatformView.SetRawInputType(Android.Text.InputTypes.ClassNumber |
+                        Android.Text.InputTypes.NumberFlagDecimal | Android.Text.InputTypes.NumberFlagSigned);
+                }
+            });
         Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping("ForgeEntry", (handler, _) =>
             {
                 handler.PlatformView.BackgroundTintList = Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.Transparent);
