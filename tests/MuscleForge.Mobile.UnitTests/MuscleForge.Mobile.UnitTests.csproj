@@ -13,5 +13,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="../../contracts/fixtures/units-timezones.json" Link="units-timezones.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../contracts/fixtures/local-template.json" Link="local-template.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

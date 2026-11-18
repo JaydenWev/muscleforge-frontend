@@ -6,6 +6,8 @@ Audience: The developer and an AI coding agent
 
 Owner decision, 2026-11-13: development and native acceptance use physical Android phones. Emulator work is excluded from scope. Apply the current feature development guidelines when interpreting older verification references in this baseline.
 
+Owner decision, 2026-11-18: templates are locally owned SQLite data in the initial app; server template sync/backup is deferred to MF-96. [Decision 0002](decisions/0002-local-template-storage.md) and the [implemented storage agreement](local-template-storage.md) supersede this historical baseline's server-template API-first requirements and its deferral of offline template editing. Workout start/save/history remain server-backed; local template upload is not required.
+
 ## 1. Product goal and requirements
 
 The product name and Android display name are **MuscleForge**. Use `MuscleForge` for .NET project/namespace prefixes and `muscleforge` for repository/artifact naming. Choose a stable Android application ID before the first signed release; do not invent a domain ownership claim.
@@ -110,9 +112,11 @@ MuscleForge.Frontend.sln
 src/
   MuscleForge.Mobile/          # MAUI XAML views, Shell, Android/platform adapters
   MuscleForge.Mobile.Core/     # UI-independent view models, sync, local interfaces
+  MuscleForge.Mobile.Storage/  # Portable production SQLite adapter; Mobile owns path/composition
   MuscleForge.Client/          # Generated C# HTTP client and DTOs
 tests/
   MuscleForge.Mobile.UnitTests/
+  MuscleForge.Mobile.StorageTests/ # Actual SQLite transactions and migrations
   MuscleForge.Mobile.UiTests/   # Appium Android smoke tests
 contracts/
   openapi.json                    # Pinned copy from a backend release/commit
@@ -129,7 +133,7 @@ README.md
 
 The frontend owns native interaction, navigation, local database migrations, draft/outbox storage, synchronization orchestration, API consumption, token storage, and signed Android artifacts. It does not own server business rules or server schema. Client-side validation helps interaction; the server independently validates all writes.
 
-Mobile references Mobile.Core and Client. Mobile.Core may reference the platform-neutral Client library but stays free of MAUI types. Implement SQLite, SecureStorage, connectivity, and lifecycle adapters in Mobile and inject interfaces. Keep platform-independent logic testable without an emulator.
+Mobile references Mobile.Core, Mobile.Storage and Client. Mobile.Core may reference the platform-neutral Client library but stays free of MAUI/SQLite types. The portable Mobile.Storage assembly implements local SQLite interfaces and is referenced directly by actual SQLite tests. Mobile owns app-private file location, SecureStorage, connectivity, lifecycle adapters and injection. Ordinary portable builds require no Android runtime or backend checkout; native acceptance uses physical phones.
 
 Use CommunityToolkit ObservableObject and async commands. Views bind to view models; do not put network/database workflows in code-behind. Use cancellation and async I/O without blocking the UI thread. One injected sync coordinator owns replay. Map generated API DTOs to local/display models; never share server EF entities or domain assemblies with the frontend.
 

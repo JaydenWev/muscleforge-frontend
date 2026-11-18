@@ -20,7 +20,11 @@ jobs:
       - run: dotnet tool restore
       - run: scripts/generate-api-client.sh --check
       - run: dotnet restore tests/MuscleForge.Mobile.UnitTests/MuscleForge.Mobile.UnitTests.csproj
-      - run: dotnet test tests/MuscleForge.Mobile.UnitTests/MuscleForge.Mobile.UnitTests.csproj -c Release --no-restore --logger trx
+      - run: dotnet test tests/MuscleForge.Mobile.UnitTests/MuscleForge.Mobile.UnitTests.csproj -c Release --no-restore --logger trx -warnaserror
+      - name: Restore real SQLite storage tests
+        run: dotnet restore tests/MuscleForge.Mobile.StorageTests/MuscleForge.Mobile.StorageTests.csproj
+      - name: Verify local template SQLite persistence and migrations
+        run: dotnet test tests/MuscleForge.Mobile.StorageTests/MuscleForge.Mobile.StorageTests.csproj -c Release --no-restore --logger trx -warnaserror
       - name: Publish the exact pinned client contract
         uses: actions/upload-artifact@v4
         with:
