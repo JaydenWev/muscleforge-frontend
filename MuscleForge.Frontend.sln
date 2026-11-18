@@ -10,6 +10,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MuscleForge.Client", "src\M
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MuscleForge.Mobile.UnitTests", "tests\MuscleForge.Mobile.UnitTests\MuscleForge.Mobile.UnitTests.csproj", "{4BF8CEFE-187A-57E8-81C4-1DD7313AEA5F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MuscleForge.Mobile.Storage", "src\MuscleForge.Mobile.Storage\MuscleForge.Mobile.Storage.csproj", "{EF79D6C4-C424-4246-82F4-FA0A2BF84354}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MuscleForge.Mobile.StorageTests", "tests\MuscleForge.Mobile.StorageTests\MuscleForge.Mobile.StorageTests.csproj", "{74E7EAA9-568E-4566-965D-F3A57D7DD144}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,5 +36,13 @@ Global
 		{4BF8CEFE-187A-57E8-81C4-1DD7313AEA5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4BF8CEFE-187A-57E8-81C4-1DD7313AEA5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4BF8CEFE-187A-57E8-81C4-1DD7313AEA5F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF79D6C4-C424-4246-82F4-FA0A2BF84354}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF79D6C4-C424-4246-82F4-FA0A2BF84354}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF79D6C4-C424-4246-82F4-FA0A2BF84354}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF79D6C4-C424-4246-82F4-FA0A2BF84354}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74E7EAA9-568E-4566-965D-F3A57D7DD144}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74E7EAA9-568E-4566-965D-F3A57D7DD144}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74E7EAA9-568E-4566-965D-F3A57D7DD144}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74E7EAA9-568E-4566-965D-F3A57D7DD144}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

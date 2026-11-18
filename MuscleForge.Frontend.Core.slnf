@@ -4,7 +4,9 @@
     "projects": [
       "src\\MuscleForge.Mobile.Core\\MuscleForge.Mobile.Core.csproj",
       "src\\MuscleForge.Client\\MuscleForge.Client.csproj",
-      "tests\\MuscleForge.Mobile.UnitTests\\MuscleForge.Mobile.UnitTests.csproj"
+      "src\\MuscleForge.Mobile.Storage\\MuscleForge.Mobile.Storage.csproj",
+      "tests\\MuscleForge.Mobile.UnitTests\\MuscleForge.Mobile.UnitTests.csproj",
+      "tests\\MuscleForge.Mobile.StorageTests\\MuscleForge.Mobile.StorageTests.csproj"
     ]
   }
 }

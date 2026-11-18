@@ -16,6 +16,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../MuscleForge.Mobile.Core/MuscleForge.Mobile.Core.csproj" />
+    <ProjectReference Include="../MuscleForge.Mobile.Storage/MuscleForge.Mobile.Storage.csproj" />
     <ProjectReference Include="../MuscleForge.Client/MuscleForge.Client.csproj" />
     <PackageReference Include="Microsoft.Maui.Controls" />
     <PackageReference Include="Microsoft.Extensions.Http" />

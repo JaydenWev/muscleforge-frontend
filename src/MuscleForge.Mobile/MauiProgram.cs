@@ -2,6 +2,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MuscleForge.Client;
 using MuscleForge.Mobile.Core.Networking;
+using MuscleForge.Mobile.Core.Templates;
+using MuscleForge.Mobile.Storage;
 using MuscleForge.Mobile.Core.Catalog;
 using MuscleForge.Mobile.Views.Catalog;
 using MuscleForge.Mobile.Core.Authentication;
@@ -27,6 +29,7 @@ public static class MauiProgram
                 fonts.AddFont("Manrope-ExtraBold.ttf", "ManropeExtraBold");
             });
         builder.Services.AddSingleton<AppAppearance>();
+        builder.Services.AddSingleton<ILocalTemplateStore>(_ => new SqliteLocalTemplateStore(Path.Combine(FileSystem.AppDataDirectory, "muscleforge.db3")));
         builder.Services.AddHttpClient<MuscleForgeApiClient>(client => client.Timeout = TimeSpan.FromSeconds(15))
             // Use Android's trust policy, including debug-only user CAs, for every API call.
             .ConfigurePrimaryHttpMessageHandler(() => new Xamarin.Android.Net.AndroidMessageHandler
