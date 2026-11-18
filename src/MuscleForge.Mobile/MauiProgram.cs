@@ -13,6 +13,7 @@ using MuscleForge.Mobile.Core.ViewModels;
 using MuscleForge.Mobile.Services;
 using MuscleForge.Mobile.Views;
 using MuscleForge.Mobile.Controls;
+using MuscleForge.Mobile.Core.Workspaces;
 
 namespace MuscleForge.Mobile;
 
@@ -41,13 +42,22 @@ public static class MauiProgram
         builder.Services.AddTransient<IApiStatusService, ApiStatusService>();
         builder.Services.AddSingleton<ConnectionViewModel>();
         builder.Services.AddSingleton<IRefreshCredentialStore, SecureRefreshCredentialStore>();
+        builder.Services.AddSingleton<IWorkspaceStore, WorkspacePreferencesStore>();
+        builder.Services.AddSingleton<ILocalWorkspace, LocalWorkspace>();
         builder.Services.AddTransient<IAuthGateway, ApiAuthGateway>();
-        builder.Services.AddSingleton<IAuthSession, AuthSession>();
+        builder.Services.AddSingleton<IAuthSession>(services => new AuthSession(
+            services.GetRequiredService<IConnectionSettings>(),
+            services.GetRequiredService<IRefreshCredentialStore>(),
+            services.GetRequiredService<IAuthGateway>(),
+            workspace: services.GetRequiredService<ILocalWorkspace>()));
         builder.Services.AddTransient<IExerciseCatalogGateway, ApiExerciseCatalogGateway>();
         builder.Services.AddTransient<IAccountPreferencesGateway, ApiAccountPreferencesGateway>();
         builder.Services.AddTransient<ExerciseListViewModel>(services => new ExerciseListViewModel(services.GetRequiredService<IExerciseCatalogGateway>(), services.GetRequiredService<IAuthSession>(), MainThread.BeginInvokeOnMainThread));
         builder.Services.AddTransient<ExerciseNavigation>();
         builder.Services.AddSingleton<IExercisePicker, ExercisePicker>();
+        builder.Services.AddTransient<ITemplateExercisePicker, TemplateExercisePicker>();
+        builder.Services.AddTransient<TemplatePages>();
+        builder.Services.AddTransient<IWorkspacePageFactory, WorkspacePageFactory>();
         builder.Services.AddTransient<ExerciseCatalogPage>();
         builder.Services.AddSingleton<SessionNavigator>();
         builder.Services.AddTransient<ConnectionPage>();
