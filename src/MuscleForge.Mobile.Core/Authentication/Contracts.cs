@@ -2,7 +2,7 @@ namespace MuscleForge.Mobile.Core.Authentication;
 
 public enum AuthStatus { SignedOut, Restoring, SigningIn, SignedIn, SigningOut, RequiresSignIn, StorageError, ConnectionError }
 public sealed record AuthAccount(Guid Id, string Email);
-public sealed record SessionState(AuthStatus Status, AuthAccount? Account = null, string? Message = null);
+public sealed record SessionState(AuthStatus Status, AuthAccount? Account = null, string? Message = null, Uri? Server = null);
 
 public sealed class AuthContext(Uri baseUri, Guid accountId, string accessToken)
 {

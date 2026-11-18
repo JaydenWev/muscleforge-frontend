@@ -3,10 +3,12 @@ using System.Text.Json;
 using MuscleForge.Client;
 using MuscleForge.Mobile.Core.Networking;
 using MuscleForge.Mobile.Core.Settings;
+using MuscleForge.Mobile.Core.Templates;
+using MuscleForge.Mobile.Core.Workspaces;
 
 namespace MuscleForge.Mobile.Core.Authentication;
 
-public sealed class AuthSession(IConnectionSettings settings, IRefreshCredentialStore store, IAuthGateway gateway, TimeProvider? timeProvider = null) : IAuthSession
+public sealed class AuthSession(IConnectionSettings settings, IRefreshCredentialStore store, IAuthGateway gateway, TimeProvider? timeProvider = null, ILocalWorkspace? workspace = null) : IAuthSession
 {
     private readonly object sync = new();
     // Serialize credential reads, writes, and clears so an older operation cannot overwrite a newer one.
@@ -119,6 +121,16 @@ public sealed class AuthSession(IConnectionSettings settings, IRefreshCredential
         string? value;
         try
         {
+            if (workspace is not null)
+            {
+                await workspace.RestoreAsync(cancellationToken);
+                lock (sync) { if (!Current(version, endpoint)) return; }
+                if (workspace.IsExplicitlySignedOut)
+                {
+                    Fail(version, endpoint, AuthStatus.SignedOut, null);
+                    return;
+                }
+            }
             await storageGate.WaitAsync(cancellationToken);
             try
             {
@@ -225,6 +237,22 @@ public sealed class AuthSession(IConnectionSettings settings, IRefreshCredential
                 return null;
             }
 
+            try
+            {
+                if (workspace is not null)
+                    await workspace.RememberVerifiedAsync(TemplateScope.Create(endpoint.AbsoluteUri, account.Id), ct);
+                ct.ThrowIfCancellationRequested();
+            }
+            catch
+            {
+                // A failed or cancelled write may already have persisted. Remove both
+                // records before allowing another authentication transition to write.
+                await ClearInterruptedWriteAsync();
+                if (ct.IsCancellationRequested) throw;
+                Fail(version, endpoint, AuthStatus.StorageError, "Unable to save the local workspace.");
+                return null;
+            }
+
             lock (sync)
             {
                 if (Current(version, endpoint))
@@ -232,7 +260,7 @@ public sealed class AuthSession(IConnectionSettings settings, IRefreshCredential
                     context = new(endpoint, account.Id, tokens.AccessToken);
                     refreshToken = tokens.RefreshToken;
                     expiresAt = expiry;
-                    Publish(new(AuthStatus.SignedIn, account));
+                    Publish(new(AuthStatus.SignedIn, account, Server: endpoint));
                     return context;
                 }
             }
@@ -248,13 +276,19 @@ public sealed class AuthSession(IConnectionSettings settings, IRefreshCredential
         }
     }
 
+    // Both attempts run even if one store fails. A tombstone prevents a retained
+    // refresh credential from authorizing automatic restoration after logout.
     private async Task ClearInterruptedWriteAsync()
     {
-        try { await store.ClearAsync(CancellationToken.None); }
-        catch
+        var failed = false;
+        if (workspace is not null)
         {
-            throw new CredentialCleanupException();
+            try { await workspace.ClearAsync(CancellationToken.None); }
+            catch { failed = true; }
         }
+        try { await store.ClearAsync(CancellationToken.None); }
+        catch { failed = true; }
+        if (failed) throw new CredentialCleanupException();
     }
 
     private sealed class CredentialCleanupException : Exception;
@@ -262,16 +296,19 @@ public sealed class AuthSession(IConnectionSettings settings, IRefreshCredential
     public async Task SignOutAsync(CancellationToken cancellationToken = default)
     {
         var version = Begin(AuthStatus.SigningOut);
+        workspace?.Suspend();
         try
         {
-            await storageGate.WaitAsync(cancellationToken);
+            // Once logout starts, finish both durable cleanup attempts even if the
+            // caller cancels while an earlier authentication write holds the gate.
+            await storageGate.WaitAsync(CancellationToken.None);
             try
             {
                 lock (sync)
                 {
                     if (generation != version) return;
                 }
-                await store.ClearAsync(cancellationToken);
+                await ClearInterruptedWriteAsync();
             }
             finally
             {
@@ -279,14 +316,9 @@ public sealed class AuthSession(IConnectionSettings settings, IRefreshCredential
             }
             Fail(version, null, AuthStatus.SignedOut, null);
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            Fail(version, null, AuthStatus.StorageError, "Unable to clear saved sign-in.");
-            throw;
-        }
         catch
         {
-            Fail(version, null, AuthStatus.StorageError, "Unable to clear saved sign-in.");
+            Fail(version, null, AuthStatus.StorageError, "Unable to clear saved sign-in. Try signing out again.");
         }
     }
 
