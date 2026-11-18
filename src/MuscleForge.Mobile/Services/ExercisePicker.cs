@@ -19,24 +19,29 @@ public sealed class ExercisePicker(IExerciseCatalogGateway gateway, IAuthSession
     private async Task<ExerciseSelection?> PickOnMainThreadAsync(CancellationToken cancellationToken)
     {
         if (cancellationToken.IsCancellationRequested) return null;
-        var shell = Shell.Current;
+        var root = Application.Current?.Windows.FirstOrDefault()?.Page;
+        var shell = root as Shell;
+        var stack = root as NavigationPage;
+        var navigation = root?.Navigation;
         var accountId = session.State.Account?.Id;
-        if (shell is null || session.State.Status != AuthStatus.SignedIn) return null;
+        if (navigation is null || (shell is null && stack is null) || session.State.Status != AuthStatus.SignedIn) return null;
         var vm = new ExerciseSelectionViewModel(gateway, session, MainThread.BeginInvokeOnMainThread);
         var completion = new TaskCompletionSource<ExerciseSelection?>(TaskCreationOptions.RunContinuationsAsynchronously);
         ExercisePickerPage? page = null;
         EventHandler<ShellNavigatedEventArgs>? navigated = null;
+        EventHandler<NavigationEventArgs>? popped = null;
         EventHandler<SessionState>? changed = null;
         var finished = false;
         async Task Finish(ExerciseSelection? selection)
         {
             if (finished) return;
             finished = true;
-            shell.Navigated -= navigated;
+            if (shell is not null) shell.Navigated -= navigated;
+            if (stack is not null) stack.Popped -= popped;
             session.StateChanged -= changed;
             vm.Dispose();
-            if (page is not null && shell.Navigation.NavigationStack.LastOrDefault() == page)
-                try { await shell.Navigation.PopAsync(); } catch (Exception) { }
+            if (page is not null && navigation.NavigationStack.LastOrDefault() == page)
+                try { await navigation.PopAsync(); } catch (Exception) { }
             if (selection is not null)
             {
                 try
@@ -49,12 +54,14 @@ public sealed class ExercisePicker(IExerciseCatalogGateway gateway, IAuthSession
             completion.TrySetResult(selection);
         }
         page = new ExercisePickerPage(vm, Finish);
-        navigated = (_, _) => { if (!shell.Navigation.NavigationStack.Contains(page)) _ = Finish(null); };
+        navigated = (_, _) => { if (!navigation.NavigationStack.Contains(page)) _ = Finish(null); };
+        popped = (_, args) => { if (args.Page == page) _ = Finish(null); };
         changed = (_, state) => { if (state.Status != AuthStatus.SignedIn || state.Account?.Id != accountId) MainThread.BeginInvokeOnMainThread(() => _ = Finish(null)); };
-        shell.Navigated += navigated;
+        if (shell is not null) shell.Navigated += navigated;
+        if (stack is not null) stack.Popped += popped;
         session.StateChanged += changed;
         using var registration = cancellationToken.Register(() => MainThread.BeginInvokeOnMainThread(() => _ = Finish(null)));
-        try { await shell.Navigation.PushAsync(page); if (finished && shell.Navigation.NavigationStack.LastOrDefault() == page) await shell.Navigation.PopAsync(); }
+        try { await navigation.PushAsync(page); if (finished && navigation.NavigationStack.LastOrDefault() == page) await navigation.PopAsync(); }
         catch { await Finish(null); throw; }
         return await completion.Task;
     }
