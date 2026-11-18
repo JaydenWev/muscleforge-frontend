@@ -6,7 +6,9 @@ Native .NET MAUI Android app for MuscleForge, a personal workout tracker. Compan
 
 The app starts with native sign-in, restores a saved session, and opens Workout, Exercises, Templates, History, and Settings tabs after resolving the account from the API. Exercises supports search, paging, custom creation, editing and permanent archiving, with equipment and load guidance. Settings shows the account and offers sign-out. Server configuration remains available before sign-in. The app uses a forest-and-lime palette, Manrope typography, and persistent dark, light, or system appearance. Workout logging and template editing are still planned.
 
-Access tokens stay in memory; refresh credentials use Android SecureStorage. The portable session service coordinates refresh and verifies server/account identity. See [native authentication and its verification limits](docs/native-auth.md), the [architecture baseline](docs/architecture.md), and the [foundation decision](docs/decisions/0001-initial-foundation.md). SQLite drafts and synchronization are future increments.
+Access tokens stay in memory; refresh credentials use Android SecureStorage. The portable session service coordinates refresh and verifies server/account identity. See [native authentication and its verification limits](docs/native-auth.md), the [architecture baseline](docs/architecture.md), and the [foundation decision](docs/decisions/0001-initial-foundation.md).
+
+MF-20 provides [local SQLite template storage and safe migrations](docs/local-template-storage.md). The owner-approved [local-first decision](docs/decisions/0002-local-template-storage.md) places native template screens in MF-21 and defers server template sync/backup to MF-96. The current Templates tab remains a placeholder until those screens are delivered; workout drafts remain MF-25.
 
 See [the exercise catalog workflow and acceptance record](docs/exercise-catalog.md). This app revision requires the MF-12 backend exercise endpoints and its explicitly applied catalog migration; `/api/v1/status` success alone does not prove those endpoints are deployed.
 
@@ -34,9 +36,11 @@ dotnet tool restore
 scripts/generate-api-client.sh --check
 dotnet restore tests/MuscleForge.Mobile.UnitTests/MuscleForge.Mobile.UnitTests.csproj
 dotnet test tests/MuscleForge.Mobile.UnitTests/MuscleForge.Mobile.UnitTests.csproj -c Release --no-restore
+dotnet restore tests/MuscleForge.Mobile.StorageTests/MuscleForge.Mobile.StorageTests.csproj
+dotnet test tests/MuscleForge.Mobile.StorageTests/MuscleForge.Mobile.StorageTests.csproj -c Release --no-restore -warnaserror
 ```
 
-`MuscleForge.Frontend.Core.slnf` loads the portable projects in an IDE. The full `MuscleForge.Frontend.sln` includes Android and needs its workload.
+`MuscleForge.Frontend.Core.slnf` loads the portable projects and actual SQLite tests in an IDE. Mobile.Storage references only Mobile.Core and the pinned SQLite package; Mobile supplies its private path and the storage tests exercise that same adapter with native SQLite. The full `MuscleForge.Frontend.sln` includes Android and needs its workload.
 
 ## Build and install Android
 
