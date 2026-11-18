@@ -91,6 +91,36 @@ public class TemplateEditorViewModelTests
         Assert.Equal("Newer edit", vm.Name);
     }
 
+    [Fact]
+    public async Task Validation_identifies_fields_and_retains_draft()
+    {
+        var vm = Editor(new Store());
+        await vm.InitializeAsync(ct: TestContext.Current.CancellationToken);
+        vm.Name = " ";
+        Assert.True(vm.AddExercise(Metadata()));
+        var exercise = vm.Exercises[0];
+        Assert.True(exercise.AddSet());
+        var set = exercise.Sets[0];
+        Assert.False(await vm.SaveAsync(TestContext.Current.CancellationToken));
+        Assert.Contains("name", vm.ValidationMessage, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(" ", vm.Name);
+
+        vm.Name = "Plan";
+        exercise.RestSecondsText = "86401";
+        Assert.False(await vm.SaveAsync(TestContext.Current.CancellationToken));
+        Assert.Contains("rest", vm.ValidationMessage, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("86401", exercise.RestSecondsText);
+
+        exercise.RestSecondsText = "0";
+        set.RepMinText = "8";
+        set.RepMaxText = "5";
+        Assert.False(await vm.SaveAsync(TestContext.Current.CancellationToken));
+        Assert.Contains("repetition", vm.ValidationMessage, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("8", set.RepMinText);
+        Assert.Equal("5", set.RepMaxText);
+        Assert.True(vm.IsDirty);
+    }
+
     private sealed class Store : ILocalTemplateStore
     {
         public LocalTemplate? Item, Last; public Exception? Failure, ReadFailure; public TaskCompletionSource<LocalTemplate>? Pending; public TaskCompletionSource<LocalTemplate?>? PendingRead;

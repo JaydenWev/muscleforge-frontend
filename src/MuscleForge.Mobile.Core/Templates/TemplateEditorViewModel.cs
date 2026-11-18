@@ -156,8 +156,11 @@ public sealed class TemplateEditorViewModel : ObservableObject
     }
     public LocalTemplate CreateSnapshot()
     {
+        var trimmedName = Name?.Trim() ?? "";
+        if (trimmedName.Length is 0 or > 100)
+            throw new TemplateValidationException("Enter a template name of 1–100 characters.");
         var exercises = Exercises.Select((e, i) => e.Snapshot(i)).ToArray();
-        var candidate = new LocalTemplate(scope, id, Name, saved?.Revision ?? 0, saved?.ArchivedAt, exercises);
+        var candidate = new LocalTemplate(scope, id, trimmedName, saved?.Revision ?? 0, saved?.ArchivedAt, exercises);
         LocalTemplateValidation.ValidateForSave(scope, candidate, saved);
         return candidate;
     }

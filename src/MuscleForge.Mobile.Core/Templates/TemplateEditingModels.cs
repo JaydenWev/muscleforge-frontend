@@ -46,7 +46,13 @@ public sealed class TemplateExerciseEditor : ObservableObject
             changed();
         }
     }
-    internal LocalTemplateExercise Snapshot(int position) => new(Id, position, Metadata, ParseInteger(RestSecondsText, "Rest must be a whole number from 0 to 86400 seconds."), Sets.Select((s, i) => s.Snapshot(i)));
+    internal LocalTemplateExercise Snapshot(int position)
+    {
+        const string message = "Rest must be a whole number from 0 to 86400 seconds.";
+        var rest = ParseInteger(RestSecondsText, message);
+        if (rest is < 0 or > 86400) throw new TemplateValidationException(message);
+        return new(Id, position, Metadata, rest, Sets.Select((s, i) => s.Snapshot(i)));
+    }
     internal static int? ParseInteger(string? text, string message)
     {
         if (string.IsNullOrEmpty(text)) return null;
@@ -110,7 +116,13 @@ public sealed class TemplateSetEditor : ObservableObject
         weightText = originalDisplay;
         OnPropertyChanged(nameof(WeightText));
     }
-    internal LocalTemplateSet Snapshot(int position) => new(Id, position, Kind,
-    TemplateExerciseEditor.ParseInteger(RepMinText, "Repetitions must be positive whole numbers."),
-    TemplateExerciseEditor.ParseInteger(RepMaxText, "Repetitions must be positive whole numbers."), ParseWeight());
+    internal LocalTemplateSet Snapshot(int position)
+    {
+        const string message = "Enter both repetition limits as positive whole numbers, with the minimum no greater than the maximum.";
+        var minimum = TemplateExerciseEditor.ParseInteger(RepMinText, message);
+        var maximum = TemplateExerciseEditor.ParseInteger(RepMaxText, message);
+        if (minimum.HasValue != maximum.HasValue || minimum is <= 0 || maximum is <= 0 || minimum > maximum)
+            throw new TemplateValidationException(message);
+        return new(Id, position, Kind, minimum, maximum, ParseWeight());
+    }
 }
