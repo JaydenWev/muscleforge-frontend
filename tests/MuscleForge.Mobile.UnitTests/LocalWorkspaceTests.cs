@@ -41,8 +41,13 @@ public sealed class LocalWorkspaceTests
     {
         public Guid Id = Account;
         public bool Offline;
+        public int RefreshCalls;
         public Task<AuthTokens> LoginAsync(Uri baseUri, string email, string password, CancellationToken cancellationToken) => Task.FromResult(new AuthTokens("access", "refresh", 900));
-        public Task<AuthTokens> RefreshAsync(Uri baseUri, string refreshToken, CancellationToken cancellationToken) => Offline ? Task.FromException<AuthTokens>(new HttpRequestException()) : Task.FromResult(new AuthTokens("access", "refresh", 900));
+        public Task<AuthTokens> RefreshAsync(Uri baseUri, string refreshToken, CancellationToken cancellationToken)
+        {
+            RefreshCalls++;
+            return Offline ? Task.FromException<AuthTokens>(new HttpRequestException()) : Task.FromResult(new AuthTokens("access", "refresh", 900));
+        }
         public Task<AuthAccount> GetCurrentUserAsync(Uri baseUri, string accessToken, CancellationToken cancellationToken) => Task.FromResult(new AuthAccount(Id, "user@example.test"));
     }
 
@@ -195,6 +200,38 @@ public sealed class LocalWorkspaceTests
         Assert.Null(session.State.Server);
         await session.SignOutAsync(TestContext.Current.CancellationToken);
         Assert.Null(session.State.Server);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FailedTombstoneCannotReopenWorkspaceOnRetryInSameProcess(bool credentialClearFails)
+    {
+        var settings = new Settings(); var saved = new WorkspaceStore();
+        var credentials = new CredentialStore(); var gateway = new Gateway();
+        var workspace = new LocalWorkspace(saved, settings);
+        var session = new AuthSession(settings, credentials, gateway, workspace: workspace);
+        var ct = TestContext.Current.CancellationToken;
+        await session.SignInAsync("a", "b", ct);
+        saved.FailClear = true;
+        credentials.FailClear = credentialClearFails;
+        await session.SignOutAsync(ct);
+        Assert.Equal(AuthStatus.StorageError, session.State.Status);
+        Assert.NotNull(saved.Value); // The old verified record remains on disk.
+        for (var i = 0; i < 2; i++)
+        {
+            await workspace.RestoreAsync(ct);
+            await session.RestoreAsync(ct);
+            Assert.True(workspace.IsExplicitlySignedOut);
+            Assert.Null(workspace.CurrentScope);
+            Assert.Null(await session.GetContextAsync(ct));
+            Assert.Equal(0, gateway.RefreshCalls);
+        }
+        credentials.FailClear = false;
+        await session.SignInAsync("a", "b", ct);
+        Assert.Equal(AuthStatus.SignedIn, session.State.Status);
+        Assert.False(workspace.IsExplicitlySignedOut);
+        Assert.Equal(Account, workspace.CurrentScope!.AccountId);
     }
 
 }

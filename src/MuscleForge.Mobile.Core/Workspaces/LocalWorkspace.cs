@@ -46,10 +46,16 @@ public sealed class LocalWorkspace(IWorkspaceStore store, IConnectionSettings se
     public async Task RestoreAsync(CancellationToken cancellationToken = default)
     {
         long version;
-        lock (sync) version = generation;
+        cancellationToken.ThrowIfCancellationRequested();
+        lock (sync)
+        {
+            if (signedOut) return;
+            version = generation;
+        }
         await gate.WaitAsync(cancellationToken);
         try
         {
+            lock (sync) { if (signedOut || version != generation) return; }
             var value = await store.ReadAsync(cancellationToken);
             TemplateScope? restored = null;
             var restoredSignedOut = false;
@@ -62,7 +68,7 @@ public sealed class LocalWorkspace(IWorkspaceStore store, IConnectionSettings se
             catch (Exception e) when (e is JsonException or TemplateValidationException or ArgumentNullException) { }
             lock (sync)
             {
-                if (version != generation) return;
+                if (signedOut || version != generation) return;
                 scope = restored;
                 signedOut = restoredSignedOut;
             }
