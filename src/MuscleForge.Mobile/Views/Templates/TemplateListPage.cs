@@ -21,6 +21,8 @@ public sealed class TemplateListPage : ContentPage, IDisposable
         var archived = new Switch { AutomationId = "TemplateShowArchived", MinimumHeightRequest = 48, MinimumWidthRequest = 48 };
         SemanticProperties.SetDescription(archived, "Show archived templates");
         archived.SetBinding(Switch.IsToggledProperty, nameof(viewModel.IncludeArchived));
+        archived.SetBinding(IsEnabledProperty, new Binding(nameof(viewModel.IsBusy),
+            converter: new MuscleForge.Mobile.Views.Catalog.InverseBooleanConverter()));
         archived.Toggled += async (_, _) => { if (IsLoaded) await LoadAsync(); };
         var busy = new ActivityIndicator(); busy.SetBinding(ActivityIndicator.IsRunningProperty, nameof(viewModel.IsBusy)); busy.SetBinding(IsVisibleProperty, nameof(viewModel.IsBusy));
         var error = ForgeUi.Text(""); error.SetBinding(Label.TextProperty, nameof(viewModel.ErrorMessage));
