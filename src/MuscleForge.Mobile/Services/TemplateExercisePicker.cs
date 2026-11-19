@@ -1,44 +1,18 @@
 using MuscleForge.Mobile.Controls;
-using MuscleForge.Mobile.Core.Authentication;
-using MuscleForge.Mobile.Core.Catalog;
 using MuscleForge.Mobile.Core.Templates;
 using MuscleForge.Mobile.Core.Workspaces;
 
 namespace MuscleForge.Mobile.Services;
 
 public sealed class TemplateExercisePicker(
-    IExercisePicker onlinePicker,
-    IExerciseCatalogGateway catalog,
     ILocalTemplateStore templates,
-    ILocalWorkspace workspace,
-    IAuthSession session) : ITemplateExercisePicker
+    IGuestWorkspace workspace) : ITemplateExercisePicker
 {
     public async Task<LocalExerciseMetadata?> PickAsync(TemplateScope scope, CancellationToken cancellationToken = default)
     {
-        if (workspace.CurrentScope != scope) return null;
+        if (!workspace.IsReady || !scope.IsGuest || workspace.CurrentScope != scope) return null;
         var root = Application.Current?.Windows.FirstOrDefault()?.Page;
         if (root is null) return null;
-        bool CanUseApi() => workspace.CurrentScope == scope && session.State.Status == AuthStatus.SignedIn
-            && session.State.Account?.Id == scope.AccountId && session.State.Server == scope.Server;
-        var connected = CanUseApi();
-        if (connected)
-        {
-            var source = await root.DisplayActionSheetAsync("Choose exercise source", "Cancel", null,
-                "Online catalog", "Saved exercise metadata");
-            if (source == "Online catalog")
-            {
-                if (!CanUseApi()) return null;
-                var selection = await onlinePicker.PickAsync(cancellationToken);
-                if (selection is null || selection.BaseUri != scope.Server || selection.AccountId != scope.AccountId || !CanUseApi())
-                    return null;
-                var exercise = await catalog.GetAsync(selection.ExerciseId, cancellationToken);
-                if (!CanUseApi() || exercise.IsArchived) return null;
-                return new LocalExerciseMetadata(scope, exercise.Id, exercise.Name, exercise.Equipment,
-                    ExerciseTrackingType.ExternalWeightAndReps, exercise.LoadConvention, false);
-            }
-            if (source != "Saved exercise metadata") return null;
-        }
-
         // Only metadata owned by this workspace is available offline. Absence is explicit,
         // rather than substituting another user's catalog or manufacturing exercise IDs.
         var available = new Dictionary<Guid, LocalExerciseMetadata>();
@@ -113,8 +87,8 @@ public sealed class TemplateExercisePicker(
                 Spacing = 12,
                 Children =
                 {
-                    ForgeUi.Header("ON THIS DEVICE", "Saved exercises", "Metadata from your saved templates may be out of date. Online workout start will validate exercises again."),
-                    ForgeUi.Text(available.Count == 0 ? "No available exercise metadata is saved for this account and server. Sign in while connected to choose from your catalog. Existing template content is retained." : "Choose an exercise below."),
+                    ForgeUi.Header("ON THIS DEVICE", "Saved exercises", "Choose exercise details saved in your local template library."),
+                    ForgeUi.Text(available.Count == 0 ? "No exercise details are saved on this device yet. Save your plan now and add exercises later, or import an existing library from Settings. A full local exercise catalog is coming next." : "These saved exercise details may be out of date. Existing template content is retained."),
                     ForgeUi.Button("Back", () => finish(null), true)
                 }
             };

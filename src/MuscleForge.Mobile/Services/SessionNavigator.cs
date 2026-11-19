@@ -1,148 +1,89 @@
-using MuscleForge.Mobile.Core.Authentication;
-using MuscleForge.Mobile.Core.ViewModels;
-using MuscleForge.Mobile.Core.Navigation;
 using MuscleForge.Mobile.Core.Workspaces;
 using MuscleForge.Mobile.Views;
 
 namespace MuscleForge.Mobile.Services;
 
-public interface IWorkspacePageFactory
+public sealed class SessionNavigator(IServiceProvider services, IGuestWorkspace workspace)
 {
-    Page CreatePage(Action showSignIn);
-}
-
-public sealed class SessionNavigator
-{
-    private readonly IServiceProvider services;
-    private readonly IAuthSession session;
-    private readonly ILocalWorkspace workspace;
-    private readonly IWorkspacePageFactory workspacePages;
-    private bool showSignIn;
-    private bool openFullApp;
-    private bool restoringWorkspace = true;
-    private MuscleForge.Mobile.Core.Templates.TemplateScope? displayedScope;
     private Window? window;
-    private SignInViewModel? viewModel;
-    private SessionPage currentPage = SessionPage.Loading;
-    private CancellationTokenSource? restorationCancellation;
+    private CancellationTokenSource? startup;
+    private bool initializing;
 #if DEBUG && ANDROID
     private bool weightVerificationOpen;
 
     public void OpenWeightVerification()
     {
         weightVerificationOpen = true;
+        startup?.Cancel();
         if (window is null) return;
-        viewModel?.Dispose();
-        viewModel = null;
-        if (window.Page is AppShell previousShell) previousShell.Dispose();
+        (window.Page as IDisposable)?.Dispose();
         window.Page = new NavigationPage(new DebugWeightEntryPage());
     }
 #endif
-
-    public SessionNavigator(IServiceProvider services, IAuthSession session, ILocalWorkspace workspace, IWorkspacePageFactory workspacePages)
-    {
-        this.services = services;
-        this.session = session;
-        this.workspace = workspace;
-        this.workspacePages = workspacePages;
-        session.StateChanged += OnStateChanged;
-        workspace.Changed += OnWorkspaceChanged;
-    }
 
     public Window CreateWindow()
     {
 #if DEBUG && ANDROID
         if (weightVerificationOpen)
-        {
-            window = new Window(new NavigationPage(new DebugWeightEntryPage()));
-            return window;
-        }
+            return window = new Window(new NavigationPage(new DebugWeightEntryPage()));
 #endif
-        restorationCancellation = new CancellationTokenSource();
-        var loading = new ContentPage { Content = new VerticalStackLayout
-        {
-            VerticalOptions = LayoutOptions.Center, Padding = 24, Spacing = 16,
-            Children =
-            {
-                new ActivityIndicator { IsRunning = true },
-                new Label { Text = "Restoring your session…", HorizontalTextAlignment = TextAlignment.Center },
-                new Button
-                {
-                    Text = "Cancel", AutomationId = "RestoreSessionCancelButton",
-                    Command = new Command(() => restorationCancellation?.Cancel())
-                }
-            }
-        } };
-        window = new Window(loading);
-        _ = RestoreAsync(restorationCancellation.Token);
+        window = new Window(StartupPage("Opening your local library…", true));
+        _ = InitializeAsync();
         return window;
     }
 
-    private async Task RestoreAsync(CancellationToken cancellationToken)
+    private ContentPage StartupPage(string message, bool busy)
     {
-        try { await workspace.RestoreAsync(cancellationToken); }
-        catch (Exception) { }
-        restoringWorkspace = false;
-        Show();
-        try { await session.RestoreAsync(cancellationToken); }
+        var content = new VerticalStackLayout
+        {
+            Padding = 24, Spacing = 20, VerticalOptions = LayoutOptions.Center,
+            Children =
+            {
+                new Label { Text = message, HorizontalTextAlignment = TextAlignment.Center, AutomationId = "LocalWorkspaceStatus" },
+                new ActivityIndicator { IsRunning = busy, IsVisible = busy }
+            }
+        };
+        var button = new Button
+        {
+            Text = busy ? "Cancel" : "Retry", AutomationId = busy ? "LocalWorkspaceCancel" : "LocalWorkspaceRetry"
+        };
+        button.Clicked += async (_, _) =>
+        {
+            if (busy) startup?.Cancel();
+            else await InitializeAsync();
+        };
+        content.Children.Add(button);
+        return new ContentPage { Content = content };
+    }
+
+    private async Task InitializeAsync()
+    {
+        if (initializing) return;
+        initializing = true;
+        startup = new CancellationTokenSource();
+        var token = startup.Token;
+        if (window is not null) window.Page = StartupPage("Opening your local library…", true);
+        var cancelled = false;
+        try { await workspace.InitializeAsync(token); }
+        catch (OperationCanceledException) { cancelled = true; }
         catch (Exception) { }
         finally
         {
-            restorationCancellation?.Dispose();
-            restorationCancellation = null;
+            startup.Dispose();
+            startup = null;
+            initializing = false;
         }
-        Show();
-    }
-
-    private void OnStateChanged(object? sender, SessionState state)
-    {
-        Show();
-    }
-
-    private void OnWorkspaceChanged(object? sender, EventArgs e) => Show();
-
-    private void OpenSignIn()
-    {
-        if (session.State.Status == AuthStatus.SignedIn) openFullApp = true;
-        else showSignIn = true;
-        Show();
-    }
-
-    private void Show() => MainThread.BeginInvokeOnMainThread(() =>
-    {
-        if (window is null) return;
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            if (window is null) return;
 #if DEBUG && ANDROID
-        if (weightVerificationOpen) return;
+            if (weightVerificationOpen) return;
 #endif
-        if (restoringWorkspace) return;
-        var scope = workspace.CurrentScope;
-        var status = session.State.Status;
-        if (scope is not null && window.Page is AppShell editingShell && editingShell.Scope == scope
-            && editingShell.HasTemplateEditor && status is not AuthStatus.SigningOut and not AuthStatus.SignedIn)
-            return;
-        if (status == AuthStatus.SignedIn) showSignIn = false;
-        if (status != AuthStatus.SignedIn) openFullApp = false;
-        var local = !showSignIn && !openFullApp && scope is not null && status != AuthStatus.SigningOut
-            && (status != AuthStatus.SignedIn || displayedScope == scope);
-        var next = local ? SessionPage.Loading : showSignIn ? SessionPage.SignIn : SessionNavigation.Decide(status, currentPage);
-        if (currentPage == next && (local ? displayedScope == scope : displayedScope is null)) return;
-        currentPage = next;
-        displayedScope = local ? scope : null;
-        viewModel?.Dispose();
-        viewModel = null;
-        if (window.Page is AppShell previousShell) previousShell.Dispose();
-        else if (window.Page is IDisposable disposable) disposable.Dispose();
-        if (local) window.Page = workspacePages.CreatePage(OpenSignIn);
-        else if (next == SessionPage.Protected)
-        {
-            var shell = services.GetRequiredService<AppShell>();
-            shell.TemplateEditingEnded += (_, _) => Show();
-            window.Page = shell;
-        }
-        else
-        {
-            viewModel = new SignInViewModel(session, MainThread.BeginInvokeOnMainThread);
-            window.Page = new NavigationPage(new SignInPage(viewModel, services));
-        }
-    });
+            if (!cancelled && workspace.IsReady)
+                window.Page = services.GetRequiredService<AppShell>();
+            else
+                window.Page = StartupPage(cancelled ? "Opening was cancelled. Your saved data is unchanged."
+                    : workspace.Error ?? "Could not open your local library. Your saved data is unchanged.", false);
+        });
+    }
 }

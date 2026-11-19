@@ -6,7 +6,7 @@ namespace MuscleForge.Mobile.Views;
 
 public sealed class WorkoutPage : ContentPage
 {
-    public WorkoutPage(ConnectionViewModel connection)
+    public WorkoutPage(ConnectionViewModel? connection = null)
     {
         Title = "Workout";
         BindingContext = connection;
@@ -42,7 +42,8 @@ public sealed class WorkoutPage : ContentPage
             Children =
             {
                 kicker, heading, intro,
-                ForgeUi.Button("Set up your space  →", () => Shell.Current.GoToAsync("//settings"))
+                ForgeUi.Button(connection is null ? "Plan your next session  →" : "Set up your space  →",
+                    () => Shell.Current.GoToAsync(connection is null ? "//templates" : "//settings"))
             }
         };
         var hero = new Border
@@ -87,10 +88,12 @@ public sealed class WorkoutPage : ContentPage
             }
         });
 
-        var catalog = ForgeUi.Card(new VerticalStackLayout { Spacing = 12, Children = { ForgeUi.Text("Your exercises", "SectionTitle"), ForgeUi.Text("Manage the movements in your catalog."), ForgeUi.Button("Open exercises  →", () => Shell.Current.GoToAsync("//exercises"), secondary: true) } });
+        var catalog = ForgeUi.Card(new VerticalStackLayout { Spacing = 12, Children = { ForgeUi.Text("Your local library", "SectionTitle"), ForgeUi.Text("Create and edit templates on this device. No account or connection is needed."), ForgeUi.Button("Open templates  →", () => Shell.Current.GoToAsync("//templates"), secondary: true) } });
 
-        Content = ForgeUi.PageContent(brand, hero, catalog,
-            new VerticalStackLayout { Spacing = 14, Children = { ForgeUi.Text("Make it your routine", "SectionTitle"), explore } }, server);
+        var sections = new List<View> { brand, hero, catalog,
+            new VerticalStackLayout { Spacing = 14, Children = { ForgeUi.Text("Make it your routine", "SectionTitle"), explore } } };
+        if (connection is not null) sections.Add(server);
+        Content = ForgeUi.PageContent(sections.ToArray());
     }
 
     private static View WithColumn(View view, int column) { Grid.SetColumn(view, column); return view; }

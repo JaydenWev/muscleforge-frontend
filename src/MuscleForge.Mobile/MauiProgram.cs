@@ -30,7 +30,9 @@ public static class MauiProgram
                 fonts.AddFont("Manrope-ExtraBold.ttf", "ManropeExtraBold");
             });
         builder.Services.AddSingleton<AppAppearance>();
-        builder.Services.AddSingleton<ILocalTemplateStore>(_ => new SqliteLocalTemplateStore(Path.Combine(FileSystem.AppDataDirectory, "muscleforge.db3")));
+        builder.Services.AddSingleton(_ => new SqliteLocalTemplateStore(Path.Combine(FileSystem.AppDataDirectory, "muscleforge.db3")));
+        builder.Services.AddSingleton<ILocalTemplateStore>(services => services.GetRequiredService<SqliteLocalTemplateStore>());
+        builder.Services.AddSingleton<ILegacyTemplateMigration>(services => services.GetRequiredService<SqliteLocalTemplateStore>());
         builder.Services.AddHttpClient<MuscleForgeApiClient>(client => client.Timeout = TimeSpan.FromSeconds(15))
             // Use Android's trust policy, including debug-only user CAs, for every API call.
             .ConfigurePrimaryHttpMessageHandler(() => new Xamarin.Android.Net.AndroidMessageHandler
@@ -44,6 +46,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<IRefreshCredentialStore, SecureRefreshCredentialStore>();
         builder.Services.AddSingleton<IWorkspaceStore, WorkspacePreferencesStore>();
         builder.Services.AddSingleton<ILocalWorkspace, LocalWorkspace>();
+        builder.Services.AddSingleton<IGuestWorkspaceStore, GuestWorkspacePreferencesStore>();
+        builder.Services.AddSingleton<IGuestWorkspace, GuestWorkspace>();
         builder.Services.AddTransient<IAuthGateway, ApiAuthGateway>();
         builder.Services.AddSingleton<IAuthSession>(services => new AuthSession(
             services.GetRequiredService<IConnectionSettings>(),
@@ -57,10 +61,10 @@ public static class MauiProgram
         builder.Services.AddSingleton<IExercisePicker, ExercisePicker>();
         builder.Services.AddTransient<ITemplateExercisePicker, TemplateExercisePicker>();
         builder.Services.AddTransient<TemplatePages>();
-        builder.Services.AddTransient<IWorkspacePageFactory, WorkspacePageFactory>();
         builder.Services.AddTransient<ExerciseCatalogPage>();
         builder.Services.AddSingleton<SessionNavigator>();
         builder.Services.AddTransient<ConnectionPage>();
+        builder.Services.AddTransient<LocalSettingsPage>();
         builder.Services.AddTransient<AppShell>();
 #if ANDROID
         Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping(nameof(IEntry.Keyboard), (handler, view) =>
