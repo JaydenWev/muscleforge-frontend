@@ -1,6 +1,6 @@
 # Native authentication — MF-14
 
-The native sign-in page calls the pinned backend login endpoint, then `/api/v1/auth/me` to resolve the authoritative UUID/email. Only a verified account with successfully saved refresh credentials opens the protected Shell. Startup shows a restoration screen while checking saved credentials. Sign-out replaces the window root immediately, removes the app's credential key, and prevents Back from returning to the old Shell.
+The native sign-in page calls the pinned backend login endpoint, then `/api/v1/auth/me` to resolve the authoritative UUID/email. Only a verified account with successfully saved refresh credentials opens the protected Shell. Startup can first open a previously verified local Templates workspace while checking saved credentials in the background. Sign-out suspends that workspace, records a signed-out marker, and attempts to remove the app's credential key.
 
 Set the HTTPS server address through **Server settings** before signing in. An unreachable server, invalid password, missing or invalid saved session, and unavailable secure storage produce explicit messages. **Retry saved session** retries restoration after connectivity or storage recovers. **Clear saved sign-in** retries local credential removal. Sign-in and restoration can be cancelled. Password whitespace is preserved and the view-model password is cleared after every attempt. The password is never saved by the app; Android's user-controlled password manager may offer autofill on supported versions.
 
@@ -12,7 +12,7 @@ Access tokens exist only in memory. Every returned `AuthContext` captures the se
 
 The service coordinates concurrent refreshes through one shared task. A cancelled caller stops waiting without cancelling refresh for other callers. Expiry is measured from request start with a safety margin. A renewed refresh credential is persisted before the new access context becomes available. A generation guard rejects late results after logout, another sign-in, or a server change; a storage gate orders writes and removal. Cancellation after a platform write removes the interrupted credential before reporting cancellation. Storage failure never grants an authenticated context.
 
-Refresh rejection requires online sign-in. A transient network failure drops the in-memory authenticated state but retains the saved refresh credential for **Retry saved session**. Corrupt/unknown envelopes remain untouched until the user clears or replaces saved sign-in. Failed removal is reported: the app cannot promise a successful logout across restart until secure removal succeeds.
+Refresh rejection requires online sign-in. A transient network failure drops the in-memory authenticated state but retains the saved refresh credential for **Retry saved session**. Corrupt/unknown envelopes remain untouched until the user clears or replaces saved sign-in. A signed-out marker prevents automatic refresh if secure credential removal fails. Failed marker or credential cleanup is reported and can be retried; if the marker cannot be saved, durable logout across restart cannot be guaranteed. Local templates remain isolated and are not deleted by sign-out. See [local templates](local-templates.md) for offline workspace behavior and limitations.
 
 ## Server guarantees and future work
 
@@ -20,7 +20,7 @@ This feature consumes `contracts/source.json` unchanged: backend revision `24567
 
 The backend uses opaque Identity access/refresh tokens (15 minutes/14 days). Refresh credentials may be reused until expiry or security-stamp invalidation. Local logout is credential removal, without a server revocation endpoint or per-device revocation promise. A different API must not be assumed to have the same refresh semantics.
 
-There are no workout drafts yet. MF-25, MF-28 and MF-39 must add account-scoped persistence and the pending-data logout/account-change guard before local edits exist. MF-37 extends authentication recovery during replay. Do not infer offline replay or draft safety from these tests. MF-17 covers trusted HTTPS setup on the owner's physical Android phone.
+There are no workout drafts yet. Local template saves are account/server scoped; unsaved template editor changes remain in memory only. MF-25, MF-28 and MF-39 must add workout-draft persistence and the pending-data logout/account-change guard. MF-37 extends authentication recovery during replay. Do not infer offline replay or draft safety from these tests. MF-17 covers trusted HTTPS setup on the owner's physical Android phone.
 
 ## Verification record — 2026-11-10
 
