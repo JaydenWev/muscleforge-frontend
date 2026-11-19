@@ -8,7 +8,7 @@ The app opens a local guest workspace without sign-in, onboarding or network acc
 
 The exercise catalog is a placeholder until MF-98. The template editor can select exercise metadata already saved in templates; a fresh workspace can save empty plans. Local workout logging and starting from a template remain MF-25 and MF-26. The kg/lb selector starts at kg.
 
-MF-97 automated verification passed: 152 Core tests, 20 real SQLite tests, pinned-client checks, Android Debug/Release builds and APK policy checks. Physical-phone guest startup and populated-upgrade acceptance remain pending; see [the current verification record](docs/guest-workspace.md#verification). The older evidence in linked documents applies to the earlier account-based workflow. See [local template storage](docs/local-template-storage.md) for the SQLite adapter and migration contract.
+MF-97 automated verification passed: 152 Core tests, 20 real SQLite tests, pinned-client checks, Android Debug/Release builds and APK policy checks. Physical-phone populated upgrade, direct guest startup, repeat import and restart persistence passed; offline and fresh-install acceptance remain pending. See [the current verification record](docs/guest-workspace.md#verification). The older evidence in linked documents applies to the earlier account-based workflow. See [local template storage](docs/local-template-storage.md) for the SQLite adapter and migration contract.
 
 ## Requirements
 
