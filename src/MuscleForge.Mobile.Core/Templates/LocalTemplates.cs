@@ -6,7 +6,7 @@ using MuscleForge.Mobile.Core.Networking;
 
 namespace MuscleForge.Mobile.Core.Templates;
 
-/// <summary>A previously verified account at a normalized HTTPS server. This is not an authorization credential.</summary>
+/// <summary>A storage partition for a verified account or a local guest workspace. This is not an authorization credential.</summary>
 public sealed record TemplateScope
 {
     private TemplateScope(Uri server, Guid accountId)
@@ -15,7 +15,16 @@ public sealed record TemplateScope
         AccountId = accountId;
     }
     public Uri Server { get; }
+    /// <summary>Account ID for a server partition; local workspace ID for a guest partition.</summary>
     public Guid AccountId { get; }
+    /// <summary>True for the local-only storage namespace, which must never be used for HTTP.</summary>
+    public bool IsGuest => Server.Scheme == "local";
+    public static TemplateScope CreateGuest(Guid localWorkspaceId)
+    {
+        if (localWorkspaceId == Guid.Empty)
+            throw new TemplateValidationException("A valid local workspace ID is required.");
+        return new TemplateScope(new Uri("local://device/"), localWorkspaceId);
+    }
     public static TemplateScope Create(string server, Guid accountId)
     {
         if (accountId == Guid.Empty || !ApiEndpoint.TryParse(server, out var uri))
