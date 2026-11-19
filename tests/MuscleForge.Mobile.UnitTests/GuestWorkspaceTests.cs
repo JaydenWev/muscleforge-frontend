@@ -166,6 +166,61 @@ public sealed class GuestWorkspaceTests
     }
 
     [Fact]
+    public async Task EstablishedGuestDoesNotAutoImportAnAccountAddedLater()
+    {
+        var store = new GuestStore(); var legacy = new LegacyStore(); var settings = new Settings();
+        var initial = Create(store, legacy, settings);
+        await initial.InitializeAsync(TestContext.Current.CancellationToken);
+        var migration = new Migration();
+        settings.ApiBaseUrl = "https://other.test";
+        legacy.Value = $$"""{"Version":1,"Server":"https://other.test/","AccountId":"{{Guid.NewGuid()}}"}""";
+        var reopened = Create(store, legacy, settings, migration);
+        await reopened.InitializeAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(initial.CurrentScope, reopened.CurrentScope);
+        Assert.Empty(migration.Calls);
+    }
+
+    [Fact]
+    public async Task ChangedAccountDoesNotReplaceBoundAutomaticSource()
+    {
+        var originalAccount = Guid.NewGuid();
+        var legacy = new LegacyStore { Value = $$"""{"Version":1,"Server":"https://first.test/","AccountId":"{{originalAccount}}"}""" };
+        var store = new GuestStore(); var settings = new Settings { ApiBaseUrl = "https://first.test" }; var migration = new Migration();
+        var first = Create(store, legacy, settings, migration);
+        await first.InitializeAsync(TestContext.Current.CancellationToken);
+        settings.ApiBaseUrl = "https://other.test";
+        legacy.Value = $$"""{"Version":1,"Server":"https://other.test/","AccountId":"{{Guid.NewGuid()}}"}""";
+        var reopened = Create(store, legacy, settings, migration);
+        await reopened.InitializeAsync(TestContext.Current.CancellationToken);
+        Assert.True(reopened.IsReady);
+        Assert.Equal(first.CurrentScope, reopened.CurrentScope);
+        Assert.Equal(2, migration.Calls.Count);
+        Assert.All(migration.Calls, call => Assert.Equal(originalAccount, call.Source.AccountId));
+    }
+
+    [Fact]
+    public async Task FailedImportRetriesBoundSourceEvenAfterLegacyAccountChanges()
+    {
+        var originalAccount = Guid.NewGuid();
+        var legacy = new LegacyStore { Value = $$"""{"Version":1,"Server":"https://first.test/","AccountId":"{{originalAccount}}"}""" };
+        var store = new GuestStore(); var settings = new Settings { ApiBaseUrl = "https://first.test" }; var migration = new Migration { Fail = true };
+        var first = Create(store, legacy, settings, migration);
+        await first.InitializeAsync(TestContext.Current.CancellationToken);
+        Assert.False(first.IsReady);
+        var persisted = store.Value;
+        settings.ApiBaseUrl = "https://other.test";
+        legacy.Value = $$"""{"Version":1,"Server":"https://other.test/","AccountId":"{{Guid.NewGuid()}}"}""";
+        migration.Fail = false;
+        var retry = Create(store, legacy, settings, migration);
+        await retry.InitializeAsync(TestContext.Current.CancellationToken);
+        Assert.True(retry.IsReady);
+        Assert.Equal(persisted, store.Value);
+        Assert.Equal(2, migration.Calls.Count);
+        Assert.All(migration.Calls, call => Assert.Equal(originalAccount, call.Source.AccountId));
+        Assert.Equal(migration.Calls[0].Guest, retry.CurrentScope);
+    }
+
+    [Fact]
     public async Task ConcurrentInitializationPublishesOneIdentity()
     {
         var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

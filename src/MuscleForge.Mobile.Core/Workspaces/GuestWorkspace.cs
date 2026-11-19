@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using MuscleForge.Mobile.Core.Networking;
 using MuscleForge.Mobile.Core.Settings;
@@ -5,7 +6,7 @@ using MuscleForge.Mobile.Core.Templates;
 
 namespace MuscleForge.Mobile.Core.Workspaces;
 
-/// <summary>Persists a non-secret device workspace ID independently of account and credential state.</summary>
+/// <summary>Persists the non-secret device workspace identity and its initial import choice independently of credentials.</summary>
 public interface IGuestWorkspaceStore
 {
     Task<string?> ReadAsync(CancellationToken cancellationToken = default);
@@ -50,17 +51,19 @@ public sealed class GuestWorkspace(
             {
                 var value = await store.ReadAsync(cancellationToken);
                 Guid id;
+                TemplateScope? source;
                 if (value is null)
                 {
+                    // Bind at creation, before copying anything. Later account changes cannot change this choice.
+                    var legacyValue = await legacyStore.ReadAsync(cancellationToken);
+                    source = ReadRememberedScope(legacyValue, settings.ApiBaseUrl);
                     id = Guid.NewGuid();
-                    await store.WriteAsync(id.ToString("D"), cancellationToken);
+                    await store.WriteAsync(WriteIdentity(id, source), cancellationToken);
                 }
-                else if (!Guid.TryParseExact(value, "D", out id) || id == Guid.Empty)
-                    throw new InvalidDataException("The saved local workspace ID is invalid.");
+                else
+                    (id, source) = ReadIdentity(value);
 
                 var guest = TemplateScope.CreateGuest(id);
-                var legacyValue = await legacyStore.ReadAsync(cancellationToken);
-                var source = ReadRememberedScope(legacyValue, settings.ApiBaseUrl);
                 var result = source is not null
                     ? await migration.ImportLibraryAsync(source, guest, cancellationToken)
                     : null;
@@ -84,17 +87,60 @@ public sealed class GuestWorkspace(
         finally { gate.Release(); }
     }
 
+    // Explicit JSON parsing avoids reflection-based serialization dependencies in trimmed mobile builds.
+    private static string WriteIdentity(Guid id, TemplateScope? source)
+    {
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream))
+        {
+            writer.WriteStartObject();
+            writer.WriteNumber("Version", 1);
+            writer.WriteString("WorkspaceId", id.ToString("D"));
+            if (source is not null)
+            {
+                writer.WriteString("LegacyServer", source.Server.AbsoluteUri);
+                writer.WriteString("LegacyAccountId", source.AccountId.ToString("D"));
+            }
+            writer.WriteEndObject();
+        }
+        return Encoding.UTF8.GetString(stream.ToArray());
+    }
+
+    private static (Guid Id, TemplateScope? Source) ReadIdentity(string value)
+    {
+        if (value.Length > 4096) throw new InvalidDataException("The saved local workspace is invalid.");
+        using var document = JsonDocument.Parse(value);
+        var root = document.RootElement;
+        if (root.ValueKind != JsonValueKind.Object ||
+            !root.TryGetProperty("Version", out var version) || !version.TryGetInt32(out var number) || number != 1 ||
+            !root.TryGetProperty("WorkspaceId", out var workspaceId) || workspaceId.ValueKind != JsonValueKind.String ||
+            !Guid.TryParseExact(workspaceId.GetString(), "D", out var id) || id == Guid.Empty)
+            throw new InvalidDataException("The saved local workspace is invalid.");
+        var hasServer = root.TryGetProperty("LegacyServer", out var server);
+        var hasAccount = root.TryGetProperty("LegacyAccountId", out var account);
+        if (hasServer != hasAccount) throw new InvalidDataException("The saved local workspace is invalid.");
+        if (!hasServer) return (id, null);
+        if (server.ValueKind != JsonValueKind.String || account.ValueKind != JsonValueKind.String ||
+            !Guid.TryParseExact(account.GetString(), "D", out var accountId))
+            throw new InvalidDataException("The saved local workspace is invalid.");
+        return (id, TemplateScope.Create(server.GetString()!, accountId));
+    }
+
     private static TemplateScope? ReadRememberedScope(string? value, string? configuredServer)
     {
         try
         {
-            var saved = value is { Length: <= 4096 } ? JsonSerializer.Deserialize<WorkspaceRecord>(value) : null;
-            if (saved is not { Version: 1 } || !ApiEndpoint.TryParse(configuredServer, out var endpoint)) return null;
-            var source = TemplateScope.Create(saved.Server, saved.AccountId);
+            if (value is not { Length: <= 4096 } || !ApiEndpoint.TryParse(configuredServer, out var endpoint)) return null;
+            using var document = JsonDocument.Parse(value);
+            var root = document.RootElement;
+            if (root.ValueKind != JsonValueKind.Object ||
+                !root.TryGetProperty("Version", out var version) || !version.TryGetInt32(out var number) || number != 1 ||
+                !root.TryGetProperty("Server", out var server) || server.ValueKind != JsonValueKind.String ||
+                !root.TryGetProperty("AccountId", out var account) || account.ValueKind != JsonValueKind.String ||
+                !Guid.TryParse(account.GetString(), out var id)) return null;
+            var source = TemplateScope.Create(server.GetString()!, id);
             return source.Server == endpoint ? source : null;
         }
-        catch (Exception e) when (e is JsonException or TemplateValidationException or ArgumentNullException) { return null; }
+        catch (Exception e) when (e is JsonException or TemplateValidationException or ArgumentException or InvalidOperationException) { return null; }
     }
-
-    private sealed record WorkspaceRecord(int Version, string Server, Guid AccountId);
 }
