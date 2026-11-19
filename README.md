@@ -4,13 +4,11 @@ Native .NET MAUI Android app for MuscleForge, a personal workout tracker. Compan
 
 ## Current increment
 
-The app starts with native sign-in, restores a saved session, and opens Workout, Exercises, Templates, History, and Settings tabs after resolving the account from the API. Exercises supports search, paging, custom creation, editing and permanent archiving, with equipment and load guidance. Settings shows the account and offers sign-out. Server configuration remains available before sign-in. The app uses a forest-and-lime palette, Manrope typography, and persistent dark, light, or system appearance. Workout logging remains planned.
+The app opens a local guest workspace without sign-in, onboarding or network access. Templates are saved on the device. Existing account-scoped template libraries can be copied safely into that workspace; see [guest workspace and migration](docs/guest-workspace.md). Account backup and sync are deferred to MF-96; retained authentication code and credentials are not used at startup, and the local core has no account route.
 
-Access tokens stay in memory; refresh credentials use Android SecureStorage. The portable session service coordinates refresh and verifies server/account identity. See [native authentication and its verification limits](docs/native-auth.md), the [architecture baseline](docs/architecture.md), and the [foundation decision](docs/decisions/0001-initial-foundation.md).
+The exercise catalog is a placeholder until MF-98. The template editor can select exercise metadata already saved in templates; a fresh workspace can save empty plans. Local workout logging and starting from a template remain MF-25 and MF-26. The kg/lb selector starts at kg.
 
-MF-21 adds [local template screens and offline workspace access](docs/local-templates.md) on MF-20’s [SQLite storage and migrations](docs/local-template-storage.md). The owner-approved [local-first decision](docs/decisions/0002-local-template-storage.md) defers server template sync and backup to MF-96; workout drafts remain MF-25. The verification record distinguishes completed automated/phone checks from the remaining phone failure-path checks explicitly skipped by the owner.
-
-See [the exercise catalog workflow and acceptance record](docs/exercise-catalog.md). This app revision requires the MF-12 backend exercise endpoints and its explicitly applied catalog migration; `/api/v1/status` success alone does not prove those endpoints are deployed.
+MF-97 verification is pending. The older evidence in linked documents applies to the earlier account-based workflow and does not establish acceptance of the guest workspace. See [local template storage](docs/local-template-storage.md) for the SQLite adapter and migration contract.
 
 ## Requirements
 
@@ -60,7 +58,9 @@ Linux ARM64 hosts also need native replacements for the workload's x64 build too
 
 Debug builds use a development signing identity. Release signing, key backups, upgrade compatibility, and the signed personal APK will accompany the first usable release. No AAB or store account is required now.
 
-## Connect the API
+## Historical API connection setup
+
+The MF-97 local core has no account or server-settings route and does not connect at startup. The following describes the earlier authenticated workflow and remains relevant to future account integration.
 
 In Settings, enter the HTTPS server root (or proxy prefix), without `/api/v1`, credentials, query parameters, or fragments. Select **Save & connect**. Success confirms API reachability/version; it does not certify database or workout availability. A saved address starts as **Not checked** on a fresh launch; editing it clears the previous success state. Keep Tailscale connected on your phone when using a Tailscale server address.
 

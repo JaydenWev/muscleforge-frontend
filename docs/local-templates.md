@@ -1,5 +1,7 @@
 # Local templates — MF-21
 
+> MF-97 supersedes the account-based navigation and exercise-selection behavior described below. See [guest workspace](guest-workspace.md) for the current workflow and pending verification; the verification record below applies to MF-21.
+
 Templates are owned by the device and stored in its private SQLite database. The Templates screen lists active templates, can include archived templates, and opens details or a new editor. A template has a name and an ordered list of exercises; each exercise can have optional rest and ordered warm-up or working sets with optional repetition and weight targets. Exercises and sets can be added, removed and reordered. Archive hides a template from the active list while retaining its contents for viewing; it does not delete it.
 
 Choose **Save template** to persist changes. **Saved on device** appears after the SQLite transaction commits. Validation, storage and revision-conflict errors leave the editor's unsaved changes available for correction or retry; reloading the saved version requires confirmation when edits would be discarded. Leaving a dirty editor also asks for confirmation. Unsaved editor changes are held in memory, not a durable draft: process death or closing the app can lose them. Save before leaving the app.

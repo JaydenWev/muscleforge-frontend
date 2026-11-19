@@ -1,12 +1,14 @@
 # Local template storage
 
+> MF-97 adds a device guest partition and additive schema version 3 with import receipts. See [guest workspace](guest-workspace.md) for the current scope, migration and pending verification. Account-based workflow and verification references below describe earlier increments.
+
 MF-20 adds the durable local template store, its schema and Android registration. MF-21 supplies the native template screens and offline workspace navigation. This increment does not add those screens, template HTTP endpoints, an outbox or server synchronization. Server template backup/restore remains deferred to MF-96; workout start/save/history remain server-backed.
 
 ## Ownership and project boundaries
 
 `Mobile.Core/Templates` contains immutable template snapshots, validation and `ILocalTemplateStore`. It has no SQLite or MAUI dependency. `Mobile.Storage` is a portable assembly containing the actual sqlite-net-pcl adapter; both the app and the real SQLite test project reference that same assembly. Mobile owns its lazy singleton registration and app-private path, `FileSystem.AppDataDirectory/muscleforge.db3`. There is no linked test copy of the implementation and no dependency on the backend checkout.
 
-The owner-approved local-first decision supersedes the original online-template scope. [Decision 0002](decisions/0002-local-template-storage.md) records this change and the portable adapter boundary. Ordinary application startup does not create/open the database until the store is used.
+The owner-approved local-first decision supersedes the original online-template scope. [Decision 0002](decisions/0002-local-template-storage.md) records this change and the portable adapter boundary. Guest initialization may open the database to import a previously verified matching library.
 
 ## Scope and operations
 
@@ -33,7 +35,7 @@ Each operation owns/disposes its native connection. Foreign keys are enabled exp
 
 ## Schema evolution and dependencies
 
-The application database uses `PRAGMA user_version`. Version 1 creates the complete template graph; version 2 additively supplies positive integer local revisions and the listing index. Initialization and version changes are transactional, and a newer unsupported version fails without dropping data. A populated independent v1 SQL fixture verifies that IDs, account scope, ordering, rest, prescriptions and exact weights survive the actual v1-to-v2 path.
+The application database uses `PRAGMA user_version`. Version 1 creates the complete template graph; version 2 additively supplies positive integer local revisions and the listing index. Version 3 adds import receipts without replacing existing tables or data. Initialization and version changes are transactional, and a newer unsupported version fails without dropping data. A populated independent v1 SQL fixture verifies that IDs, account scope, ordering, rest, prescriptions and exact weights survive the migration to the current schema; MF-97 also verifies a populated v2 upgrade and non-destructive import.
 
 MF-25 must extend this same populated database/migration sequence for drafts and cached workout data. Do not create a competing database version owner, reset user_version, or drop/recreate tables on startup. Templates are locally owned data retained across logout, not disposable cache. Explicit deletion is separate; uninstalling or clearing app data removes local content. Local persistence is not server backup and is not encrypted by default; Android backup remains disabled as before.
 

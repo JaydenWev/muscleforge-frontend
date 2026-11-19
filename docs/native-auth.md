@@ -1,5 +1,7 @@
 # Native authentication — MF-14
 
+> MF-97 opens a guest workspace without reading or refreshing credentials and exposes no account route in the local core. Authentication code and existing credentials remain in place for future work. The behavior and evidence below describe the earlier authenticated workflow, not MF-97 acceptance; see [guest workspace](guest-workspace.md).
+
 The native sign-in page calls the pinned backend login endpoint, then `/api/v1/auth/me` to resolve the authoritative UUID/email. Only a verified account with successfully saved refresh credentials opens the protected Shell. Startup can first open a previously verified local Templates workspace while checking saved credentials in the background. Sign-out suspends that workspace, records a signed-out marker, and attempts to remove the app's credential key.
 
 Set the HTTPS server address through **Server settings** before signing in. An unreachable server, invalid password, missing or invalid saved session, and unavailable secure storage produce explicit messages. **Retry saved session** retries restoration after connectivity or storage recovers. **Clear saved sign-in** retries local credential removal. Sign-in and restoration can be cancelled. Password whitespace is preserved and the view-model password is cleared after every attempt. The password is never saved by the app; Android's user-controlled password manager may offer autofill on supported versions.

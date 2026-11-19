@@ -1,5 +1,7 @@
 # MuscleForge — Technical Architecture and Agent Handoff
 
+> MF-97 changes the current product flow to a local guest workspace without login or network access. [Decision 0003](decisions/0003-local-guest-workspace.md) and [guest workspace](guest-workspace.md) supersede this historical baseline where it requires account-based startup or online workout start. MF-98, MF-25 and MF-26 remain future work.
+
 Date: 2026-11-01  
 Status: Revised baseline — two repositories, native .NET MAUI Android app  
 Audience: The developer and an AI coding agent
