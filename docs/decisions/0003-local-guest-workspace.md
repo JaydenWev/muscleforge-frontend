@@ -1,7 +1,7 @@
 # 0003 — Device-local guest workspace
 
 Date: 2026-11-19  
-Status: Implemented for MF-97; verification pending
+Status: Implemented for MF-97; accepted by the owner with the verification limits recorded in the guest workspace guide
 
 The app's local core opens directly into a device workspace without login, onboarding or network access. A separately persisted device UUID identifies its local template partition. Existing authentication implementation and credentials are retained, but startup does not read or refresh them and this core has no account route. Optional account backup and synchronization are deferred to MF-96; local persistence is not backup.
 
