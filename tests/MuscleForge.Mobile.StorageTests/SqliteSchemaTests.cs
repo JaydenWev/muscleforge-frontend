@@ -59,7 +59,7 @@ public sealed class SqliteSchemaTests : IDisposable
         Assert.Equal(new[] { set1, set2 }, graph.Exercises[0].Sets.Select(s => s.Id));
         Assert.Equal(new decimal?[] { 45.359m, 9999999.999m }, graph.Exercises[0].Sets.Select(s => s.WeightKg));
         using var reopened = new SQLiteConnection(Database);
-        Assert.Equal(2, reopened.ExecuteScalar<int>("PRAGMA user_version"));
+        Assert.Equal(3, reopened.ExecuteScalar<int>("PRAGMA user_version"));
     }
 
     [Fact]

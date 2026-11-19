@@ -5,7 +5,7 @@ using SQLite;
 namespace MuscleForge.Mobile.Storage;
 
 /// <summary>Stores account-scoped template graphs in the app's local SQLite database.</summary>
-public sealed class SqliteLocalTemplateStore(string databasePath) : ILocalTemplateStore
+public sealed partial class SqliteLocalTemplateStore(string databasePath) : ILocalTemplateStore, MuscleForge.Mobile.Core.Workspaces.ILegacyTemplateMigration
 {
     private readonly string path = string.IsNullOrWhiteSpace(databasePath) ? throw new ArgumentException("A database path is required.", nameof(databasePath)) : databasePath;
     private const string SchemaV1 = """
@@ -65,7 +65,7 @@ public sealed class SqliteLocalTemplateStore(string databasePath) : ILocalTempla
             try
             {
                 var version = db.ExecuteScalar<int>("PRAGMA user_version");
-                if (version > 2) throw new TemplateStorageException("The local database was created by a newer app version.");
+                if (version > 3) throw new TemplateStorageException("The local database was created by a newer app version.");
                 if (version == 0)
                 {
                     foreach (var statement in SchemaV1.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)) db.Execute(statement);
@@ -77,6 +77,12 @@ public sealed class SqliteLocalTemplateStore(string databasePath) : ILocalTempla
                     db.Execute("ALTER TABLE local_templates ADD COLUMN revision INTEGER NOT NULL DEFAULT 1 CHECK(typeof(revision) = 'integer' AND revision > 0)");
                     db.Execute("CREATE INDEX local_templates_listing ON local_templates(server,account_id,archived_at,name,id)");
                     db.Execute("PRAGMA user_version = 2");
+                    version = 2;
+                }
+                if (version == 2)
+                {
+                    db.Execute("CREATE TABLE local_template_import_receipts (source_server TEXT NOT NULL, source_account_id TEXT NOT NULL, template_id TEXT NOT NULL, guest_server TEXT NOT NULL, guest_account_id TEXT NOT NULL, PRIMARY KEY(source_server,source_account_id,template_id,guest_server,guest_account_id))");
+                    db.Execute("PRAGMA user_version = 3");
                 }
                 db.Execute("COMMIT");
             }
