@@ -1,6 +1,0 @@
-{
-  "backendRepository": "https://github.com/JaydenWev/muscleforge-backend",
-  "backendCommit": "9f4c08c76c430fb76303cec022e84503ed034d9e",
-  "path": "contracts/fixtures/units-timezones.json",
-  "sha256": "68917a63a6a2e7efa556af34cf80ad545a4b78eaf461df759392d58c6cc5f6c9"
-}

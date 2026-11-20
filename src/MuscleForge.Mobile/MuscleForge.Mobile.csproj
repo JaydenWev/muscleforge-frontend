@@ -7,24 +7,18 @@
     <SingleProject>true</SingleProject>
     <ApplicationTitle>MuscleForge</ApplicationTitle>
     <ApplicationId>local.muscleforge.app</ApplicationId>
-    <ApplicationDisplayVersion>0.2.0</ApplicationDisplayVersion>
-    <ApplicationVersion>2</ApplicationVersion>
+    <ApplicationDisplayVersion>0.1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
     <SupportedOSPlatformVersion>24.0</SupportedOSPlatformVersion>
     <AndroidPackageFormats>apk</AndroidPackageFormats>
-    <!-- CI APKs must work with adb install without a fast-deployment session. -->
     <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../MuscleForge.Mobile.Core/MuscleForge.Mobile.Core.csproj" />
-    <ProjectReference Include="../MuscleForge.Client/MuscleForge.Client.csproj" />
     <PackageReference Include="Microsoft.Maui.Controls" />
-    <PackageReference Include="Microsoft.Extensions.Http" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
   </ItemGroup>
   <ItemGroup>
-    <MauiIcon Include="Resources/AppIcon/appicon.svg" Color="#0F1512" />
-    <MauiSplashScreen Include="Resources/Splash/splash.svg" Color="#0F1512" BaseSize="128,128" />
-    <MauiImage Include="Resources/Images/*.svg" />
+    <MauiIcon Include="Resources/AppIcon/appicon.svg" Color="#14171E" />
+    <MauiSplashScreen Include="Resources/Splash/splash.svg" Color="#14171E" BaseSize="128,128" />
     <MauiFont Include="Resources/Fonts/*.ttf" />
     <MauiAsset Include="Resources/Fonts/Manrope-OFL.txt" LogicalName="Manrope-OFL.txt" />
   </ItemGroup>

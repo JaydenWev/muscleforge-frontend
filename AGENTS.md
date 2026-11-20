@@ -1,9 +1,3 @@
 # Agent instructions
 
-Before planning, changing, or reviewing frontend work, read:
-
-- The shared feature development guidelines: `../feature-development-guidelines.md`.
-- This repository's setup and instructions: `README.md`.
-- The technical architecture baseline: `../workout-app-architecture.md`.
-
-Follow repository-specific instructions in addition to the shared guidelines. The shared guide at the workspace root is canonical; do not copy it here. If it is unavailable in the checkout, ask the user to provide it rather than relying on a stale copy.
+This branch contains the new standalone MuscleForge Android app, based on the mockups in Google Drive under `/projects/muscle-forge/mockups`. Read `README.md` before changing the app. Do not assume the previous application or its backend is part of this project.
